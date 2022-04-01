@@ -1,13 +1,24 @@
-from email.mime import base
 import numpy as np
 import pandas as pd
-from pandas_datareader import data as wb
+from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import base_functions
 
-def get_performance_ratios(tickers):
+def get_portfolio_hist_perf(tickers, weights):
+    data = pd.DataFrame()
+    for t in tickers:
+        data[t] = pdr.DataReader(t, data_source='yahoo', start = '2000-1-1')['Adj Close']
+    cov_matrix = base_functions.log_returns(data).cov()
+    vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+    mean = base_functions.log_returns(data).mean().sum()
+    for t in tickers:
+        data[t] = weights[tickers.index(t)] * data[t]
+    price_init = data.sum(axis=1)[-1]
+    return vol, mean, price_init
+
+def get_performance_ratios(ticker):
     # Get Stock Data
-    stock_data = base_functions.import_stock_data(tickers)
+    stock_data = base_functions.import_stock_data(ticker)
     rf_data = base_functions.import_stock_data(['^TNX'])/100
     
     # Get Stock Risk Free Return

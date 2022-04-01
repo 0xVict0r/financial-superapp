@@ -1,4 +1,3 @@
-from curses import start_color
 import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
@@ -15,7 +14,7 @@ def lin_returns(data):
 
 # Calculate Log Returns
 def log_returns(data):
-    return (np.log(1+data.pct_change()))
+    return np.log(1+data.pct_change())
 
 def get_asset_hist_perf(ticker):
     price = import_stock_data(ticker)
