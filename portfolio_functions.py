@@ -5,19 +5,59 @@ import matplotlib.pyplot as plt
 import base_functions
 
 def get_portfolio_hist_perf(tickers, weights):
+    # Create Stock Prices Dataframes
     data = pd.DataFrame()
     for t in tickers:
         data[t] = pdr.DataReader(t, data_source='yahoo', start = '2000-1-1')['Adj Close']
+        
+    # Get the Covariance Matrix and the Portfolio Volatility
     cov_matrix = base_functions.log_returns(data).cov()
     vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-    mean = base_functions.log_returns(data).mean().sum()
-    for t in tickers:
-        data[t] = weights[tickers.index(t)] * data[t]
-    price_init = data.sum(axis=1)[-1]
+    
+    # Get the Portfolio Mean
+    mean = np.dot(base_functions.log_returns(data).mean(), weights)
+    price_init = np.dot(data.iloc[-1], weights)
     return vol, mean, price_init
 
+def get_sharpe_ratio(mean, vol):
+    # Get Risk Free Rate
+    rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
+    
+    # Get Sharpe Ratio
+    sharpe = ((1+mean)**252-1-rf)/(vol*np.sqrt(252))
+    return sharpe
+
+def get_best_portfolio(tickers):
+    num_ports = 10
+    all_weights = np.zeros((num_ports, len(tickers)))
+    ret_arr = np.zeros(num_ports)
+    vol_arr = np.zeros(num_ports)
+    sharpe_arr = np.zeros(num_ports)
+
+    for i in range(num_ports): 
+        # weights 
+        weights = np.array(np.random.random(len(tickers))) 
+        weights = weights/np.sum(weights)  
+        
+        # save the weights
+        all_weights[i,:] = weights
+        
+        # expected return 
+        vol_arr[i], ret_arr[i],_ = get_portfolio_hist_perf(tickers, weights)
+
+        # Sharpe Ratio 
+        sharpe_arr[i] = get_sharpe_ratio(ret_arr[i], vol_arr[i])
+    
+    # plot the data
+    plt.figure(figsize=(12,8))
+    plt.scatter(vol_arr,ret_arr,c=sharpe_arr,cmap='plasma')
+    plt.colorbar(label='Sharpe Ratio')
+    plt.xlabel('Volatility')
+    plt.ylabel('Return')
+    plt.show()
+
 def get_performance_ratios(ticker):
-    # Get Stock Data
+    # Get Risk Free Rate
     stock_data = base_functions.import_stock_data(ticker)
     rf_data = base_functions.import_stock_data(['^TNX'])/100
     

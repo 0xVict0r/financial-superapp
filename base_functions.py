@@ -19,24 +19,24 @@ def log_returns(data):
 def get_asset_hist_perf(ticker):
     price = import_stock_data(ticker)
     mean = log_returns(price).mean()
-    stdev = log_returns(price).std()
+    vol = log_returns(price).std()
     init_price = price[-1]
-    return mean, stdev, init_price
+    return mean, vol, init_price
 
 # Get Drift of the Asset
-def drift_calc(stdev, mean):
-    return (mean-(0.5*stdev**2))
+def drift_calc(vol, mean):
+    return (mean-(0.5*vol**2))
     
 # Calculate Daily Returns
-def daily_returns(stdev, mean, days, iterations):
-    drift = drift_calc(stdev, mean)
-    daily_returns = np.exp(drift + stdev * np.random.normal(0, 1, (days, iterations)))
+def daily_returns(vol, mean, days, iterations):
+    drift = drift_calc(vol, mean)
+    daily_returns = np.exp(drift + vol * np.random.normal(0, 1, (days, iterations)))
     return daily_returns
 
 # Monte Carlo
-def simulate_mc(init_price, stdev, mean, days, iterations, name):
+def simulate_mc(init_price, vol, mean, days, iterations, name):
     # Generate daily returns
-    returns = daily_returns(stdev, mean, days, iterations)
+    returns = daily_returns(vol, mean, days, iterations)
     # Create empty matrix
     price_list = np.zeros_like(returns)
     # Put the last actual price in the first row of matrix. 
@@ -53,6 +53,7 @@ def simulate_mc(init_price, stdev, mean, days, iterations, name):
     print(f"Years: {(days-1)/252}")
     print(f"Expected Value: ${round(price_df.iloc[-1].mean(),2)}")
     print(f"Return: {round(100*(price_df.iloc[-1].mean()-price_list[0,1])/price_df.iloc[-1].mean(),2)}%")
+    print(f"Volatility: {vol*np.sqrt(252)*100}%")
           
     return price_df
 
