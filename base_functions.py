@@ -1,14 +1,17 @@
 import numpy as np
 import pandas as pd
-from pandas_datareader import data as wb
+from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 
 # Get Historic Stock Prices
 def import_stock_data(tickers, start = '2000-1-1'):
     data = pd.DataFrame()
     for t in tickers:
-        data[t] = wb.DataReader(t, data_source='yahoo', start = start)['Adj Close']
+        data[t] = pdr.DataReader(t, data_source='yahoo', start = start)['Adj Close']
     return data
+
+def lin_returns(data):
+    return (1+data.pct_change())
 
 # Calculate Log Returns
 def log_returns(data):
