@@ -11,9 +11,8 @@ def get_performance_ratios(tickers):
     rf_data = base_functions.import_stock_data(['^TNX'])/100
     
     # Get Stock Risk Free Return
-    rf_last_value = rf_data.values[-1]
     stock_return = ((stock_data.pct_change().values).T[0])[1:]
-    rf_stock_return = ((np.average(stock_return)+1)**252-1) - rf_last_value
+    rf_stock_return = ((np.average(stock_return)+1)**252-1) - rf_data.values[-1]
     
     # Get STDEVs 
     stock_rf_hist = stock_return[1:] - rf_data.values.T[0][-len(stock_return)+1:]

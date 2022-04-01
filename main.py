@@ -2,12 +2,12 @@ import base_functions
 import portfolio_functions
 
 # Variables
-days = 365
+years = 1
 trials = 10000
-ticker = ['FB']
+ticker = 'FB'
 
 if __name__ == "__main__":
-    data = base_functions.import_stock_data(ticker)
-    price_est = base_functions.simulate_mc(data, days + 1, 1000)
+    mean, stdev, init_price = base_functions.get_asset_hist_perf(ticker)
+    price_est = base_functions.simulate_mc(init_price, stdev, mean, years*252 + 1, 1000, 'test')
     base_functions.plot_all_prices(price_est)
-    sharpe, sortino, calmar = portfolio_functions.get_performance_ratios(ticker)
+    #sharpe, sortino, calmar = portfolio_functions.get_performance_ratios(ticker)
