@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from pandas_datareader import data as wb
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Get Historic Stock Prices
 def import_stock_data(tickers, start = '2000-1-1'):
