@@ -21,5 +21,6 @@ def portfolio_performance_estimator(tickers, weights, price_init, years, plottin
 def asset_price_estimator(ticker, years, plotting = False):
     mean, vol, init_price = base_functions.get_asset_hist_perf(ticker)
     price_est = base_functions.simulate_mc(init_price, vol, mean, years*252, 1000, ticker)
+    base_functions.plot_percentiles(init_price, base_functions.get_percentile_prices(price_est), years*252)
     if plotting:
         base_functions.plot_all_prices(price_est)

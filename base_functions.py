@@ -3,6 +3,7 @@ import pandas as pd
 from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
+from matplotlib.widgets import Cursor
 
 # Get Historic Stock Prices
 def import_stock_data(ticker, start = '2000-1-1'):
@@ -53,8 +54,8 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     print('-----------------------------------')
     print(name+':')
     print(f"Years: {(days)/252}")
-    print(f"Expected Value: ${round(price_df.iloc[-1].mean(),2)}")
-    print(f"Return: {round(100*(price_df.iloc[-1].mean()-price_list[0,1])/price_df.iloc[-1].mean(),2)}%")
+    print(f"Expected Value: ${round(price_df.iloc[-1].median(),2)}")
+    print(f"Return: {round(100*(price_df.iloc[-1].median()-price_list[0,1])/price_df.iloc[-1].median(),2)}%")
     print(f"Volatility: {vol*np.sqrt(252)*100}%")
     print(f"Sharpe Ratio: {portfolio_functions.get_sharpe_ratio([mean, vol])}")
     print('-----------------------------------')
@@ -67,8 +68,21 @@ def plot_all_prices(price_dataframe):
     
 def get_percentile_prices(price_dataframe):
     last_prices = price_dataframe.iloc[-1]
-    prices = last_prices.quantile([.1, .5, .9]).values
+    prices = last_prices.quantile([.25, .5, .75]).values
     return prices
 
 def plot_percentiles(init_price, percentile_prices, days):
-    return
+    daily_interests = (percentile_prices/init_price)**(1/days)
+    prices = np.ones((3, days+1))
+    for j in np.arange(3):
+        prices[j][0] *= init_price
+        for i in np.arange(days):
+            prices[j][i+1] *= prices[j][i] * daily_interests[j]
+            
+    fig = plt.figure()
+    ax = fig.subplots()
+    ax.plot(np.arange(days+1)/21, prices[0])
+    ax.plot(np.arange(days+1)/21, prices[1])
+    ax.plot(np.arange(days+1)/21, prices[2])
+    ax.grid()
+    plt.show()
