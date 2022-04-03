@@ -3,7 +3,6 @@ import pandas as pd
 from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
-from matplotlib.widgets import Cursor
 
 # Get Historic Stock Prices
 def import_stock_data(ticker, start = '2000-1-1'):
