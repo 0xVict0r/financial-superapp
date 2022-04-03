@@ -1,5 +1,3 @@
-import base_functions
-import portfolio_functions
 import run_functions
 import numpy as np
 
@@ -12,4 +10,4 @@ weights = np.array([0.1, 0.5, 0.4])
 price_init = 1000
 
 if __name__ == "__main__":
-    run_functions.portfolio_performance_estimator(tickers, weights, price_init, years, plotting = False)
+    run_functions.asset_price_estimator(ticker, years, plotting = True)

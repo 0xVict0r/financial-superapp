@@ -52,11 +52,12 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     # Printing information about stock
     print('-----------------------------------')
     print(name+':')
-    print(f"Years: {(days-1)/252}")
+    print(f"Years: {(days)/252}")
     print(f"Expected Value: ${round(price_df.iloc[-1].mean(),2)}")
     print(f"Return: {round(100*(price_df.iloc[-1].mean()-price_list[0,1])/price_df.iloc[-1].mean(),2)}%")
     print(f"Volatility: {vol*np.sqrt(252)*100}%")
     print(f"Sharpe Ratio: {portfolio_functions.get_sharpe_ratio([mean, vol])}")
+    print('-----------------------------------')
           
     return price_df
 
@@ -66,7 +67,7 @@ def plot_all_prices(price_dataframe):
     
 def get_percentile_prices(price_dataframe):
     last_prices = price_dataframe.iloc[-1]
-    prices = last_prices.quantile([.25, .5, .75]).values
+    prices = last_prices.quantile([.1, .5, .9]).values
     return prices
 
 def plot_percentiles(init_price, percentile_prices, days):

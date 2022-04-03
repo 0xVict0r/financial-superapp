@@ -17,3 +17,9 @@ def portfolio_performance_estimator(tickers, weights, price_init, years, plottin
     portfolio_functions.print_portfolio_weights(tickers, weights)
     if plotting:
         base_functions.plot_all_prices(price_est)
+        
+def asset_price_estimator(ticker, years, plotting = False):
+    mean, vol, init_price = base_functions.get_asset_hist_perf(ticker)
+    price_est = base_functions.simulate_mc(init_price, vol, mean, years*252, 1000, ticker)
+    if plotting:
+        base_functions.plot_all_prices(price_est)
