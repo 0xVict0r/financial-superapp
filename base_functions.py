@@ -63,3 +63,11 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
 def plot_all_prices(price_dataframe):
     price_dataframe.plot(legend = False, grid = True, xlim=(0, len(price_dataframe)))
     plt.show()
+    
+def get_percentile_prices(price_dataframe):
+    last_prices = price_dataframe.iloc[-1]
+    prices = last_prices.quantile([.25, .5, .75]).values
+    return prices
+
+def plot_percentiles(init_price, percentile_prices, days):
+    return
