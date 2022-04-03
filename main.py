@@ -12,4 +12,4 @@ weights = np.array([0.1, 0.5, 0.4])
 price_init = 1000
 
 if __name__ == "__main__":
-    run_functions.best_portfolio_performance_estimator(tickers, price_init, years, plotting = False, num_ports=1)
+    run_functions.portfolio_performance_estimator(tickers, weights, price_init, years, plotting = False)

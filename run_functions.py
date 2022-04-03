@@ -9,3 +9,11 @@ def best_portfolio_performance_estimator(tickers, price_init, years, plotting = 
     portfolio_functions.print_portfolio_weights(tickers, best_weights)
     if plotting:
         base_functions.plot_all_prices(price_est)
+        
+def portfolio_performance_estimator(tickers, weights, price_init, years, plotting = False):
+    portfolio_data = portfolio_functions.get_portfolio_data(tickers)
+    mean, vol = portfolio_functions.get_portfolio_hist_perf(portfolio_data, weights)
+    price_est = base_functions.simulate_mc(price_init, vol, mean, years*252 + 1, 1000, 'Portfolio')
+    portfolio_functions.print_portfolio_weights(tickers, weights)
+    if plotting:
+        base_functions.plot_all_prices(price_est)
