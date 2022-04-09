@@ -3,16 +3,22 @@ import pandas as pd
 from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
-import math
 
 # Get Historic Stock Prices
 def import_stock_data(ticker, start = '2000-1-1'):
     data = pdr.DataReader(ticker, data_source='yahoo', start = start)['Adj Close']
     return data
 
+def get_weights_and_tickers():
+    data = np.genfromtxt('./data/portfolio.csv', delimiter=',', dtype=str, skip_header=1)
+    tickers = data[:,0]
+    init_value = np.sum(data[:,1].astype(float))
+    weights = data[:,1].astype(float)/init_value
+    return tickers, weights, init_value
+
 # Calculate Linear Returns
 def lin_returns(data):
-    return (1+data.pct_change())
+    return 1+data.pct_change()
 
 # Calculate Log Returns
 def log_returns(data):
@@ -53,9 +59,10 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     # Printing information about stock
     print('-----------------------------------')
     print(name+':')
-    print(f"Years: {(days)/252}")
-    print(f"Expected Value: ${round(price_df.iloc[-1].median(),2)}")
-    print(f"Return: {round(100*(price_df.iloc[-1].median()-price_list[0,1])/price_df.iloc[-1].median(),2)}%")
+    print(f"Years: {np.int((days)/252)}")
+    print(f"Initial Value: ${np.round(init_price, 2)}")
+    print(f"Expected Value: ${np.round(price_df.iloc[-1].median(),2)}")
+    print(f"Return: {np.round(100*(price_df.iloc[-1].median()-price_list[0,1])/price_df.iloc[-1].median(),2)}%")
     print(f"Volatility: {np.round(vol*np.sqrt(252)*100, 2)}%")
     print(f"Sharpe Ratio: {np.round(portfolio_functions.get_sharpe_ratio([mean, vol]), 3)}")
     print('-----------------------------------')

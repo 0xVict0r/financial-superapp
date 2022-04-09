@@ -58,5 +58,5 @@ def get_best_portfolio(data, num_ports=10):
 def print_portfolio_weights(tickers, weights):
     print('Portfolio Weights: ')
     for i in range(len(tickers)):
-        print(tickers[i] + f': {weights[i]*100}%')
+        print(tickers[i] + f': {np.round(weights[i]*100, 2)}%')
     print('-----------------------------------')
