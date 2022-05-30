@@ -7,6 +7,8 @@ import scipy.optimize as sco
 
 
 def get_portfolio_data(tickers):
+    global data
+
     print('Retrieving Portoflio Assets Price Data!')
     data = pd.DataFrame()
     start_date = datetime.date(2000, 1, 3)
@@ -33,7 +35,7 @@ def get_portfolio_hist_perf(data, weights):
     return mean, vol
 
 
-def get_sharpe_ratio(mean_vol):
+def get_sharpe_ratio_single(mean_vol):
     # Get Risk Free Rate
     rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
 
@@ -42,25 +44,37 @@ def get_sharpe_ratio(mean_vol):
     return sharpe
 
 
-def get_best_portfolio(data, num_ports=10):
+def get_sharpe_ratio(weights):
+
+    # Get the Covariance Matrix and the Portfolio Volatility
+    cov_matrix = base_functions.log_returns(data).cov()
+    vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+
+    # Get the Portfolio Mean
+    mean = np.dot(base_functions.log_returns(data).mean(), weights)
+
+    # Get Risk Free Rate
+    rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
+
+    # Get Sharpe Ratio
+    sharpe = ((1+mean)**252-1-rf)/(vol*np.sqrt(252))
+    return sharpe*-1
+
+
+def check_sum(weights):
+    return np.sum(weights) - 1
+
+
+def get_best_portfolio():
     print('Starting Sharpe Optimization!')
-    best_sharpe = 0
+    weights_init = np.random.random(len(data.columns))
+    cons = ({'type': 'eq', 'fun': check_sum})
+    bounds = tuple([(0, 1) for i in range(len(data.columns))])
 
-    for i in range(num_ports):
-        print(f'Running Try no. {i+1}')
-        # weights
-        weights = np.array(np.random.random(len(data.columns)))
-        weights = weights/np.sum(weights)
+    result = sco.minimize(get_sharpe_ratio, weights_init,
+                          method='SLSQP', bounds=bounds, constraints=cons)
 
-        # Sharpe Ratio
-        sharpe_temp = get_sharpe_ratio(get_portfolio_hist_perf(data, weights))
-
-        # Check Whether Higher
-        if sharpe_temp > best_sharpe:
-            best_weights = weights
-            best_sharpe = sharpe_temp
-
-    return best_sharpe, best_weights
+    return (result.fun)*-1, np.asarray(result.x)
 
 
 def print_portfolio_weights(tickers, weights):

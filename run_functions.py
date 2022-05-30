@@ -4,13 +4,12 @@ import base_functions
 import time
 
 
-def best_portfolio_performance_estimator(tickers, price_init, years, mc_plotting=False, num_ports=10, monte_carlo_trials=100000):
+def best_portfolio_performance_estimator(tickers, price_init, years, mc_plotting=False, monte_carlo_trials=100000):
     start = time.time()
-    portfolio_data = portfolio_functions.get_portfolio_data(tickers)
-    best_sharpe, best_weights = portfolio_functions.get_best_portfolio(
-        portfolio_data, num_ports)
+    data = portfolio_functions.get_portfolio_data(tickers)
+    best_sharpe, best_weights = portfolio_functions.get_best_portfolio()
     mean, vol = portfolio_functions.get_portfolio_hist_perf(
-        portfolio_data, best_weights)
+        data, best_weights)
     price_est = base_functions.simulate_mc(
         price_init, vol, mean, years*252 + 1, monte_carlo_trials, 'Portfolio')
     portfolio_functions.print_portfolio_weights(tickers, best_weights)

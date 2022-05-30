@@ -82,7 +82,7 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     print(f"Return: {np.round(((1+mean)**252-1)*100, 2)}%")
     print(f"Volatility: {np.round(vol*np.sqrt(252)*100, 2)}%")
     print(
-        f"Sharpe Ratio: {np.round(portfolio_functions.get_sharpe_ratio([mean, vol]), 3)}")
+        f"Sharpe Ratio: {np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
     print('-----------------------------------')
 
     return price_df
