@@ -4,6 +4,10 @@ from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
 import streamlit as st
+import altair as alt
+import plotly.express as px
+
+pd.options.plotting.backend = "plotly"
 
 # Get Historic Stock Prices
 
@@ -75,16 +79,14 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     price_df = pd.DataFrame(price_list)
 
     # Printing information about stock
-    print('-----------------------------------')
-    print(name+':')
-    print(f"Years: {np.int((days)/252)}")
-    print(f"Initial Value: ${np.round(init_price, 2)}")
-    print(f"Expected Value: ${np.round(price_df.iloc[-1].median(),2)}")
-    print(f"Return: {np.round(((1+mean)**252-1)*100, 2)}%")
-    print(f"Volatility: {np.round(vol*np.sqrt(252)*100, 2)}%")
-    print(
-        f"Sharpe Ratio: {np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
-    print('-----------------------------------')
+    st.write(name+':')
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Current Value", f"${np.round(init_price, 2)}")
+    col2.metric("Yearly Return",
+                f"{np.round(((price_df.iloc[-1].median()/init_price)**(252/days)-1)*100, 2)}%")
+    col3.metric("Yearly Volatility", f"{np.round(vol*np.sqrt(252)*100, 2)}%")
+    col4.metric("Sharpe Ratio",
+                f"{np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
 
     return price_df
 
@@ -112,28 +114,15 @@ def plot_percentiles(init_price, percentile_prices, days):
     col1, col2, col3 = st.columns(3)
     col1.metric('Bad Scenario',
                 f'${np.round(percentile_prices[0], 2)}', f'{np.round((percentile_prices[0]-init_price)/init_price * 100, 2)}%')
-    col2.metric('Average Scenario', f'${np.round(percentile_prices[1], 2)}',
+    col2.metric('Median Scenario', f'${np.round(percentile_prices[1], 2)}',
                 f'{np.round((percentile_prices[1]-init_price)/init_price * 100, 2)}%')
     col3.metric('Good Scenario', f'${np.round(percentile_prices[2], 2)}',
                 f'{np.round((percentile_prices[2]-init_price)/init_price * 100, 2)}%')
 
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.subplots()
-    ax.plot(np.arange(days+1)/21, prices[2],
-            color='green', label='Good Scenario')
-    ax.plot(np.arange(days+1)/21, prices[1],
-            color='grey', label='Average Scenario')
-    ax.plot(np.arange(days+1)/21, prices[0], color='red', label='Bad Scenario')
-    ax.set_xlabel('Months')
-    ax.set_ylabel('Price [$]')
-    ax.legend()
-    ax.grid()
-    ax.set_ylim([np.floor(np.min(prices[0]))*0.95,
-                np.round(np.max(prices[2]))*1.05])
-    ax.set_xlim([0, (days+1)/21])
+    df = pd.DataFrame(
+        {"Bad": prices[0], "Median": prices[1], "Good": prices[2]}, index=np.arange(days+1)/21)
 
-    for var in (prices[0], prices[1], prices[2]):
-        plt.annotate(f'${np.round(var.max(), 2)}', xy=(1, var.max()), xytext=(
-            8, 0), xycoords=('axes fraction', 'data'), textcoords='offset points')
-
-    plt.show()
+    fig = df.plot(labels=dict(
+        index="Time [Months]", value="Price [$]", variable="Scenario"))
+    fig.update_yaxes(tickprefix="$")
+    st.plotly_chart(fig, use_container_width=True)

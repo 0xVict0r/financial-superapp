@@ -4,3 +4,5 @@ pandas_datareader
 matplotlib
 yfinance
 streamlit
+scipy
+altair
