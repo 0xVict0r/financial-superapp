@@ -2,3 +2,5 @@ numpy
 pandas
 pandas_datareader
 matplotlib
+yfinance
+streamlit
