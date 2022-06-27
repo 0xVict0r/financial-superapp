@@ -3,6 +3,7 @@ import pandas as pd
 from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
+import streamlit as st
 
 # Get Historic Stock Prices
 
@@ -108,10 +109,13 @@ def plot_percentiles(init_price, percentile_prices, days):
         for i in np.arange(days):
             prices[j][i+1] *= prices[j][i] * daily_interests[j]
 
-    print(f'Bad Scenario: ${np.round(percentile_prices[0], 2)}')
-    print(f'Average Scenario: ${np.round(percentile_prices[1], 2)}')
-    print(f'Good Scenario: ${np.round(percentile_prices[2], 2)}')
-    print('-----------------------------------')
+    col1, col2, col3 = st.columns(3)
+    col1.metric('Bad Scenario',
+                f'${np.round(percentile_prices[0], 2)}', f'{np.round((percentile_prices[0]-init_price)/init_price * 100, 2)}%')
+    col2.metric('Average Scenario', f'${np.round(percentile_prices[1], 2)}',
+                f'{np.round((percentile_prices[1]-init_price)/init_price * 100, 2)}%')
+    col3.metric('Good Scenario', f'${np.round(percentile_prices[2], 2)}',
+                f'{np.round((percentile_prices[2]-init_price)/init_price * 100, 2)}%')
 
     fig = plt.figure(figsize=(10, 7))
     ax = fig.subplots()
