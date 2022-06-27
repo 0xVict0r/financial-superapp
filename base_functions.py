@@ -4,8 +4,6 @@ from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import portfolio_functions
 import streamlit as st
-import altair as alt
-import plotly.express as px
 
 pd.options.plotting.backend = "plotly"
 
