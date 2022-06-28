@@ -22,9 +22,8 @@ def best_portfolio_performance_estimator(tickers, price_init, years, mc_plotting
         base_functions.plot_all_prices(price_est)
 
 
-def portfolio_performance_estimator(years, mc_plotting=False, monte_carlo_trials=100000):
+def portfolio_performance_estimator(tickers, weights, init_value, years, mc_plotting=False, monte_carlo_trials=100000):
     start = time.time()
-    tickers, weights, init_value = base_functions.get_weights_and_tickers()
     portfolio_data = portfolio_functions.get_portfolio_data(tickers)
     mean, vol = portfolio_functions.get_portfolio_hist_perf(
         portfolio_data, weights)
