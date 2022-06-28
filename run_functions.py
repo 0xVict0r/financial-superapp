@@ -20,6 +20,7 @@ def best_portfolio_performance_estimator(tickers, price_init, years, mc_plotting
     print("\n" + str(end - start) + "s")
     if mc_plotting:
         base_functions.plot_all_prices(price_est)
+    return best_weights
 
 
 def portfolio_performance_estimator(tickers, weights, init_value, years, mc_plotting=False, monte_carlo_trials=100000):
