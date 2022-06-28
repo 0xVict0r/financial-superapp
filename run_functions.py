@@ -1,4 +1,3 @@
-from email.mime import base
 import portfolio_functions
 import base_functions
 import time

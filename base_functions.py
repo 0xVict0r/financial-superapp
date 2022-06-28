@@ -16,17 +16,7 @@ def import_stock_data(ticker, start='2000-1-1'):
     return data
 
 
-def get_weights_and_tickers():
-    data = np.genfromtxt('./data/portfolio.csv',
-                         delimiter=',', dtype=str, skip_header=1)
-    tickers = data[:, 0]
-    init_value = np.sum(data[:, 1].astype(float))
-    weights = data[:, 1].astype(float)/init_value
-    return tickers, weights, init_value
-
 # Calculate Linear Returns
-
-
 def lin_returns(data):
     return 1+data.pct_change()
 
@@ -80,10 +70,11 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     st.write(name+':')
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Current Value", f"${np.round(init_price, 2)}")
-    col2.metric("Yearly Return",
-                f"{np.round(((price_df.iloc[-1].median()/init_price)**(252/days)-1)*100, 2)}%")
-    col3.metric("Yearly Volatility", f"{np.round(vol*np.sqrt(252)*100, 2)}%")
-    col4.metric("Sharpe Ratio",
+    col2.metric("Hisorical Yearly Return",
+                f"{np.round((mean*252)*100, 2)}%")
+    col3.metric("Historical Yearly Volatility",
+                f"{np.round(vol*np.sqrt(252)*100, 2)}%")
+    col4.metric("Historical Sharpe Ratio",
                 f"{np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
 
     return price_df
@@ -109,13 +100,15 @@ def plot_percentiles(init_price, percentile_prices, days):
         for i in np.arange(days):
             prices[j][i+1] *= prices[j][i] * daily_interests[j]
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric('Bad Scenario',
                 f'${np.round(percentile_prices[0], 2)}', f'{np.round((percentile_prices[0]-init_price)/init_price * 100, 2)}%')
     col2.metric('Median Scenario', f'${np.round(percentile_prices[1], 2)}',
                 f'{np.round((percentile_prices[1]-init_price)/init_price * 100, 2)}%')
     col3.metric('Good Scenario', f'${np.round(percentile_prices[2], 2)}',
                 f'{np.round((percentile_prices[2]-init_price)/init_price * 100, 2)}%')
+    col4.metric("Yearly Return",
+                f"{np.round(((percentile_prices[1]/init_price)**(252/days)-1)*100, 2)}%")
 
     df = pd.DataFrame(
         {"Bad": prices[0], "Median": prices[1], "Good": prices[2]}, index=np.arange(days+1)/21)
@@ -124,3 +117,9 @@ def plot_percentiles(init_price, percentile_prices, days):
         index="Time [Months]", value="Price [$]", variable="Scenario"))
     fig.update_yaxes(tickprefix="$")
     st.plotly_chart(fig, use_container_width=True)
+
+
+if __name__ == "__main__":
+    mean, vol, init_price = get_asset_hist_perf("AAPL")
+    mean_vol = (mean, vol)
+    print(portfolio_functions.get_sharpe_ratio_single(mean_vol))

@@ -27,21 +27,17 @@ def get_portfolio_data(tickers):
 
 def get_portfolio_hist_perf(data, weights):
     # Get the Covariance Matrix and the Portfolio Volatility
-    cov_matrix = base_functions.log_returns(data).cov()
-    vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+    vol = np.sqrt(np.dot(weights.T, np.dot(
+        base_functions.log_returns(data).cov(), weights)))
 
     # Get the Portfolio Mean
-    mean = np.dot(base_functions.log_returns(data).mean(), weights)
+    mean = np.log(
+        1+np.dot((np.exp(base_functions.log_returns(data).mean())-1), weights))
     return mean, vol
 
 
 def get_sharpe_ratio_single(mean_vol):
-    # Get Risk Free Rate
-    rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
-
-    # Get Sharpe Ratio
-    sharpe = ((1+mean_vol[0])**252-1-rf)/(mean_vol[1]*np.sqrt(252))
-    return sharpe
+    return (mean_vol[0]*252)/(mean_vol[1]*np.sqrt(252))
 
 
 def get_sharpe_ratio(weights):
