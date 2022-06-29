@@ -5,7 +5,7 @@ import numpy as np
 
 tickers_dict = st.session_state
 
-st.title("Portfolio Value Estimation")
+st.title("Portfolio Optimiser")
 years = st.slider(
     "Choose the number of years you want to calculate for", 1, 100, 1)
 
