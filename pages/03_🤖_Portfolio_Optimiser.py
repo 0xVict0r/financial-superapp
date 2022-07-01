@@ -1,15 +1,20 @@
 import streamlit as st
-import run_functions
+import estimator_optimiser.run_functions as run_functions
 import pandas as pd
 import numpy as np
 
 tickers_dict = st.session_state
 
+st.set_page_config(
+    page_title="Financial SuperApp",
+    page_icon="📈",
+)
+
 st.title("Portfolio Optimiser")
-years = st.slider(
-    "Choose the number of years you want to calculate for", 1, 100, 1)
 
 with st.form("init_form"):
+    years = st.slider(
+        "Choose the number of years you want to calculate for", 1, 100, 1)
     ticker = st.text_input("Input ticker here",
                            placeholder="eg. AAPL")
     col1, col2 = st.columns(2)
@@ -42,7 +47,7 @@ reload_btn = col2.button("Reset Data")
 if run_btn_mult:
     tickers = df_opt["Ticker"].values
     final_weights = run_functions.best_portfolio_performance_estimator(
-        tickers, init_value, years, mc_plotting=False, monte_carlo_trials=100000)
+        tickers, init_value, years, mc_plotting=False, monte_carlo_trials=10000)
     df_opt['Allocation [%]'] = np.round(final_weights*100, 2)
     cont.empty()
     cont.table(df_opt)

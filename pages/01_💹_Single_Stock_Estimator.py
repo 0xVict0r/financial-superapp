@@ -1,9 +1,15 @@
 import streamlit as st
-import run_functions
+import estimator_optimiser.run_functions as run_functions
 
 tickers_dict = st.session_state
 
+st.set_page_config(
+    page_title="Financial SuperApp",
+    page_icon="📈",
+)
+
 st.title("Single Asset Price Estimation")
+
 with st.form("my_form"):
     years = st.slider(
         "Choose the number of years you want to calculate for", 1, 100, 1)
@@ -13,4 +19,4 @@ with st.form("my_form"):
 
 if run_btn_single:
     run_functions.asset_price_estimator(
-        ticker, years, mc_plotting=False, monte_carlo_trials=100000)
+        ticker, years, mc_plotting=False, monte_carlo_trials=10000)

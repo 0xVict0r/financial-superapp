@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
-import base_functions
+import estimator_optimiser.base_functions as base_functions
 import datetime
 import scipy.optimize as sco
 
@@ -37,14 +37,16 @@ def get_portfolio_hist_perf(data, weights):
 
 
 def get_sharpe_ratio_single(mean_vol):
-    return (mean_vol[0]*252)/(mean_vol[1]*np.sqrt(252))
+    return (mean_vol[0]*253)/(mean_vol[1]*np.sqrt(253))
 
 
-def get_sharpe_ratio(weights):
+def get_performance_ratio(weights):
 
     # Get the Covariance Matrix and the Portfolio Volatility
-    cov_matrix = base_functions.log_returns(data).cov()
-    vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+    returns_df = base_functions.log_returns(data)
+    filtered_returns_df = returns_df[returns_df < 0]
+    cov_matrix = filtered_returns_df.cov()
+    vol_filtered = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
 
     # Get the Portfolio Mean
     mean = np.dot(base_functions.log_returns(data).mean(), weights)
@@ -52,9 +54,9 @@ def get_sharpe_ratio(weights):
     # Get Risk Free Rate
     rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
 
-    # Get Sharpe Ratio
-    sharpe = ((1+mean)**252-1-rf)/(vol*np.sqrt(252))
-    return sharpe*-1
+    # Get Sortino Ratio
+    sortino = ((1+mean)**253-1-rf)/(vol_filtered*np.sqrt(253))
+    return sortino*-1
 
 
 def check_sum(weights):
@@ -62,15 +64,15 @@ def check_sum(weights):
 
 
 def get_best_portfolio():
-    print('Starting Sharpe Optimization!')
+    print('Starting Optimization!')
     weights_init = np.random.random(len(data.columns))
     cons = ({'type': 'eq', 'fun': check_sum})
     bounds = tuple([(0, 1) for i in range(len(data.columns))])
 
-    result = sco.minimize(get_sharpe_ratio, weights_init,
+    result = sco.minimize(get_performance_ratio, weights_init,
                           method='SLSQP', bounds=bounds, constraints=cons)
 
-    return (result.fun)*-1, np.asarray(result.x)
+    return np.asarray(result.x)
 
 
 def print_portfolio_weights(tickers, weights):

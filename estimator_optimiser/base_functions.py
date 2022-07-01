@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
-import portfolio_functions
+import estimator_optimiser.portfolio_functions as portfolio_functions
 import streamlit as st
 
 pd.options.plotting.backend = "plotly"
@@ -71,9 +71,9 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Current Value", f"${np.round(init_price, 2)}")
     col2.metric("Hisorical Yearly Return",
-                f"{np.round((mean*252)*100, 2)}%")
+                f"{np.round((mean*253)*100, 2)}%")
     col3.metric("Historical Yearly Volatility",
-                f"{np.round(vol*np.sqrt(252)*100, 2)}%")
+                f"{np.round(vol*np.sqrt(253)*100, 2)}%")
     col4.metric("Historical Sharpe Ratio",
                 f"{np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
 
@@ -88,7 +88,7 @@ def plot_all_prices(price_dataframe):
 
 def get_percentile_prices(price_dataframe):
     last_prices = price_dataframe.iloc[-1]
-    prices = last_prices.quantile([.25, .5, .75]).values
+    prices = last_prices.quantile([0.25, 0.5, 0.75]).values
     return prices
 
 
@@ -108,7 +108,7 @@ def plot_percentiles(init_price, percentile_prices, days):
     col3.metric('Good Scenario', f'${np.round(percentile_prices[2], 2)}',
                 f'{np.round((percentile_prices[2]-init_price)/init_price * 100, 2)}%')
     col4.metric("Yearly Return",
-                f"{np.round(((percentile_prices[1]/init_price)**(252/days)-1)*100, 2)}%")
+                f"{np.round(((percentile_prices[1]/init_price)**(253/days)-1)*100, 2)}%")
 
     df = pd.DataFrame(
         {"Bad": prices[0], "Median": prices[1], "Good": prices[2]}, index=np.arange(days+1)/21)
