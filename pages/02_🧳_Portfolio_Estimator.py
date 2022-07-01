@@ -22,7 +22,7 @@ with st.form("init_form"):
     remove_btn = col2.form_submit_button("Remove Latest Ticker")
 
     if add_btn:
-        tickers_dict[ticker] = amount
+        tickers_dict[ticker+"-EST"] = amount
 
     if remove_btn:
         del tickers_dict[ticker]
@@ -33,7 +33,8 @@ with st.form("init_form"):
 
     df = pd.DataFrame(tickers_dict.items(), columns=[
         'Ticker', 'Value [$]'])
-    df = df[df["Ticker"].str.contains('-OPT') == False]
+    df = df[df["Ticker"].str.contains('-EST')].reset_index(drop=True)
+    df["Ticker"] = df["Ticker"].str.replace("-EST", "")
     st.table(df)
 
 col1, col2 = st.columns(2)

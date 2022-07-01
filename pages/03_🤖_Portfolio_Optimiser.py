@@ -33,7 +33,7 @@ with st.form("init_form"):
 
     df_opt = pd.DataFrame(tickers_dict.items(), columns=[
         'Ticker', 'Allocation [%]'])
-    df_opt = df_opt[df_opt["Ticker"].str.contains('-OPT')]
+    df_opt = df_opt[df_opt["Ticker"].str.contains('-OPT')].reset_index(drop=True)
     df_opt["Ticker"] = df_opt["Ticker"].str.replace("-OPT", "")
     cont = st.empty()
     cont.table(df_opt)
