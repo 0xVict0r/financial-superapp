@@ -11,13 +11,16 @@ st.set_page_config(
 
 st.title("Portfolio Value Estimation")
 
+st.markdown(
+    """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
+
 with st.form("init_form"):
     years = st.slider(
         "Choose the number of years you want to calculate for", 1, 100, 1)
     col1, col2 = st.columns(2)
     ticker = col1.text_input("Input ticker here", placeholder="eg. AAPL")
     amount = col2.number_input(
-        "Input value of ticker in portfolio", min_value=0)
+        "Input value of ticker in portfolio", min_value=0, value=1000)
     add_btn = col1.form_submit_button("Add Ticker")
     remove_btn = col2.form_submit_button("Remove Latest Ticker")
 
@@ -25,7 +28,7 @@ with st.form("init_form"):
         tickers_dict[ticker+"-EST"] = amount
 
     if remove_btn:
-        del tickers_dict[ticker]
+        del tickers_dict[ticker+"-EST"]
 
     for key in tickers_dict:
         if type(tickers_dict[key]) not in [type(0.0), type(0)]:

@@ -6,10 +6,13 @@ import plotly.express as px
 
 st.set_page_config(
     page_title="Financial SuperApp",
-    page_icon="📈",
+    page_icon="📈"
 )
 
 st.title("Compound Interest Calculator")
+
+st.markdown(
+    """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
 
 with st.form("compound_form"):
     col1_bis, col2_bis, col3_bis = st.columns(3)

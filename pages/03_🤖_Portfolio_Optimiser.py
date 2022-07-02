@@ -12,6 +12,9 @@ st.set_page_config(
 
 st.title("Portfolio Optimiser")
 
+st.markdown(
+    """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
+
 with st.form("init_form"):
     years = st.slider(
         "Choose the number of years you want to calculate for", 1, 100, 1)
@@ -25,7 +28,7 @@ with st.form("init_form"):
         tickers_dict[ticker+"-OPT"] = 0.0
 
     if remove_btn:
-        del tickers_dict[ticker]
+        del tickers_dict[ticker+"-OPT"]
 
     for key in tickers_dict:
         if type(tickers_dict[key]) not in [type(0.0), type(0)]:
@@ -33,7 +36,8 @@ with st.form("init_form"):
 
     df_opt = pd.DataFrame(tickers_dict.items(), columns=[
         'Ticker', 'Allocation [%]'])
-    df_opt = df_opt[df_opt["Ticker"].str.contains('-OPT')].reset_index(drop=True)
+    df_opt = df_opt[df_opt["Ticker"].str.contains(
+        '-OPT')].reset_index(drop=True)
     df_opt["Ticker"] = df_opt["Ticker"].str.replace("-OPT", "")
     cont = st.empty()
     cont.table(df_opt)

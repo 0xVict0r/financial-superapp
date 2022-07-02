@@ -10,6 +10,9 @@ st.set_page_config(
 
 st.title("Single Asset Price Estimation")
 
+st.markdown(
+    """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
+
 with st.form("my_form"):
     years = st.slider(
         "Choose the number of years you want to calculate for", 1, 100, 1)
