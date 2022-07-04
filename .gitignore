@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 test.py
 .streamlit/secrets.toml
+stock_valuation/api_file.py
+stock_valuation/api.csv
