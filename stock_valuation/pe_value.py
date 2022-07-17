@@ -3,8 +3,9 @@ from urllib.request import urlopen
 import certifi
 import json
 import numpy as np
+import streamlit as st
 
-api_key = str(np.loadtxt("./stock_valuation/api.csv", dtype="str"))
+api_key = st.secrets["fmp_api"]
 
 
 def get_jsonparsed_data(url):

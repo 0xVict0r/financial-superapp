@@ -6,3 +6,4 @@ yfinance
 streamlit
 scipy
 plotly
+fmpsdk
