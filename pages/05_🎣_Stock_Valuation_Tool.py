@@ -20,10 +20,9 @@ with st.form("value_stock_form"):
     run_btn_single = st.form_submit_button("Run")
 
 if run_btn_single:
-    api_key = str(np.loadtxt("./stock_valuation/api.csv", dtype="str"))
+    api_key = st.secrets["fmp_api"]
     current_price = fm.quote_short(api_key, ticker)[0]["price"]
-    dcf_price = fm.discounted_cash_flow(
-        str(np.loadtxt("./stock_valuation/api.csv", dtype="str")), ticker)[0]["dcf"]
+    dcf_price = fm.discounted_cash_flow(api_key, ticker)[0]["dcf"]
     financial_price = pe_value.get_pe_pb_value(ticker)
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Current Stock Price", f"${np.round(current_price, 2)}")
