@@ -5,7 +5,7 @@ A Python program that can predict the value of assets and portfolios (containing
 
 _This financial superapp contains tools both to help an investor with the building of his portfolio and for simpler and more elementary applications. The tools provided by this app are shortly described below._
 
-_Accessible at this [link]_
+_App is accessible at this [link]_
 
 ### _Single Asset Estimator_
 Given an asset's ticker (eg. AAPL for Apple Inc.), the tool will determine the most probable asset price at the end of the specified period.
