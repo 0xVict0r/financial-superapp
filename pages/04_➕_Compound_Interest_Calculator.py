@@ -1,6 +1,5 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 import compound_interest.functions as functions
 import plotly.express as px
 

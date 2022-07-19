@@ -71,6 +71,6 @@ def get_historical_social_sentiment(ticker_data):
     social_sentiment_arr = np.array(total_social_sentiment_list)
     return social_sentiment_arr
 
-
-print(get_current_social_sentiment(
-    get_social_sentiment_data("AAPL")))
+if __name__ == "__main__":
+    print(get_current_social_sentiment(
+        get_social_sentiment_data("AAPL")))

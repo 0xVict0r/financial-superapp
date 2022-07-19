@@ -77,6 +77,7 @@ def get_pe_pb_value(ticker):
     return np.median(value)
 
 
-ticker = "AF.PA"
-print(fm.quote_short(api_key, ticker)[0]["price"])
-print(get_pe_pb_value(ticker))
+if __name__ == "__main__":
+    ticker = "AF.PA"
+    print(fm.quote_short(api_key, ticker)[0]["price"])
+    print(get_pe_pb_value(ticker))
