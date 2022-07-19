@@ -21,7 +21,7 @@ with st.form("value_stock_form"):
 
 if run_btn_single:
     api_key = st.secrets["fmp_api"]
-    ticker_data = yf.Ticker(ticker.info)
+    ticker_data = yf.Ticker(ticker).info
     current_price = fm.quote_short(api_key, ticker)[0]["price"]
     dcf_price = fm.discounted_cash_flow(api_key, ticker)[0]["dcf"]
     financial_price = pe_value.get_pe_pb_value(ticker)
