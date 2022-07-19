@@ -55,11 +55,12 @@ def get_stock_pb_pe(ticker):
         f"https://financialmodelingprep.com/api/v3/ratios/{ticker}?limit=10&apikey={api_key}")
     ticker_data = get_jsonparsed_data(url_ratios)
     ratios_data_hist = get_jsonparsed_data(url_hist)
-    pe = ticker_data[0]["priceEarningsRatioTTM"]
-    pb = ticker_data[0]["priceToBookRatioTTM"]
-    peg = ticker_data[0]["priceToFreeCashFlowsRatioTTM"]
-    pfcf = ticker_data[0]["priceToFreeCashFlowsRatioTTM"]
-    ps = ticker_data[0]["priceSalesRatioTTM"]
+    ticker_yf_info = yf.Ticker(ticker).info
+    pe = ticker_yf_info["forwardPE"]
+    pb = ticker_yf_info["priceToBook"]
+    peg = ticker_yf_info["pegRatio"]
+    pfcf = ticker_yf_info["marketCap"]/ticker_yf_info["freeCashflow"]
+    ps = ticker_yf_info["priceToSalesTrailing12Months"]
     pe_array_hist = []
     pb_array_hist = []
     peg_array_hist = []
@@ -161,6 +162,7 @@ def get_pe_pb_value(ticker):
             value_list.append(
                 (sector_ratios[i]/stock_ratios[i]) * current_price)
     value = np.array(value_list)
+    print(value)
     return np.median(value), df_stock, df_sector, dates
 
 
@@ -226,6 +228,5 @@ def get_error(financial_df):
 
 
 if __name__ == "__main__":
-    ticker = "AF.PA"
-    print(fm.quote_short(api_key, ticker)[0]["price"])
-    print(get_pe_pb_value(ticker))
+    ticker = "ETL.PA"
+    get_pe_pb_value(ticker)
