@@ -85,7 +85,7 @@ def get_stock_pb_pe(ticker):
     dates = np.array(dates_hist)
     df_hist = pd.DataFrame({'pe': pe_hist, 'pb': pb_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
-    return np.array([pe]), df_hist, dates
+    return np.array([pe, pb, peg, pfcf, ps]), df_hist, dates
 
 
 def get_sector_industry_pe_pb(ticker):
@@ -143,7 +143,7 @@ def get_sector_industry_pe_pb(ticker):
     peg = np.median(np.array([i for i in peg_array if type(i) == type(0.0)]))
     pfcf = np.median(np.array([i for i in pfcf_array if type(i) == type(0.0)]))
     ps = np.median(np.array([i for i in ps_array if type(i) == type(0.0)]))
-    return np.array([pe]), df_hist
+    return np.array([pe, pb, peg, pfcf, ps]), df_hist
 
 
 def get_historical_dcf(ticker):
