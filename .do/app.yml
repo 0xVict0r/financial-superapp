@@ -1,8 +1,0 @@
-name: financial-superapp
-services:
-- dockerfile_path: Dockerfile
-  github:
-    branch: main
-    deploy_on_push: true
-    repo: 0xVict0r/financial-superapp
-  name: financial-superapp
