@@ -57,7 +57,10 @@ def get_stock_pb_pe(ticker):
     pe = ticker_yf_info["forwardPE"]
     pb = ticker_yf_info["priceToBook"]
     peg = ticker_yf_info["pegRatio"]
-    pfcf = ticker_yf_info["marketCap"]/ticker_yf_info["freeCashflow"]
+    try:
+        pfcf = ticker_yf_info["marketCap"]/ticker_yf_info["freeCashflow"]
+    except:
+        pfcf = None
     ps = ticker_yf_info["priceToSalesTrailing12Months"]
     pe_array_hist = []
     pb_array_hist = []
