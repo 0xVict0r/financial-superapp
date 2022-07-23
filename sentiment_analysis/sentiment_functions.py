@@ -1,13 +1,13 @@
 from urllib.request import urlopen
 import certifi
 import json
-import plotly.express as px
 import numpy as np
 import pandas as pd
 import finnhub
 import streamlit as st
+import os
 
-api_key = st.secrets["finnhub_api"]
+api_key = os.environ.get("finnhub_api")
 finnhub_client = finnhub.Client(api_key=api_key)
 
 print(finnhub_client.stock_social_sentiment('AAPL'))

@@ -3,6 +3,7 @@ import numpy as np
 import yfinance as yf
 import fmpsdk as fm
 import stock_valuation.pe_value as pe_value
+import os
 
 st.set_page_config(
     page_title="Financial SuperApp",
@@ -20,7 +21,7 @@ with st.form("value_stock_form"):
     run_btn_single = st.form_submit_button("Run")
 
 if run_btn_single:
-    api_key = st.secrets["fmp_api"]
+    api_key = os.environ.get("fmp_api")
     ticker_data = yf.Ticker(ticker).info
     current_price = fm.quote_short(api_key, ticker)[0]["price"]
     dcf_price = fm.discounted_cash_flow(api_key, ticker)[0]["dcf"]

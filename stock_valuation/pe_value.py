@@ -9,8 +9,9 @@ import pandas as pd
 import yfinance as yf
 import datetime
 import altair as alt
+import os
 
-api_key = st.secrets["fmp_api"]
+api_key = os.environ.get("fmp_api")
 
 
 def get_jsonparsed_data(url):
