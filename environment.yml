@@ -1,0 +1,15 @@
+channles:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - pandas_datareader
+  - matplotlib
+  - yfinance
+  - streamlit
+  - scipy
+  - plotly
+  - pip
+  - pip :
+    - fmpsdk
