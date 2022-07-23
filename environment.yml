@@ -2,15 +2,16 @@ name : financial-superapp
 channels:
   - defaults
   - conda-forge
+  - anaconda
 dependencies:
   - numpy
   - pandas
   - pandas_datareader
   - matplotlib
-  - yfinance
   - streamlit
   - scipy
   - plotly
   - pip
   - pip :
     - fmpsdk
+    - yfinance
