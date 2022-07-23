@@ -1,0 +1,8 @@
+spec:
+  name: financial-superapp
+  services:
+  - dockerfile_path: docker/Dockerfile
+    git:
+      branch: main
+      repo_clone_url: https://github.com/0xVict0r/financial-superapp.git
+    name: financial-superapp
