@@ -4,10 +4,7 @@ from pandas_datareader import data as pdr
 import matplotlib.pyplot as plt
 import estimator_optimiser.portfolio_functions as portfolio_functions
 import streamlit as st
-
-pd.options.plotting.backend = "plotly"
-
-# Get Historic Stock Prices
+import altair as alt
 
 
 def import_stock_data(ticker, start='2000-1-1'):
@@ -16,11 +13,8 @@ def import_stock_data(ticker, start='2000-1-1'):
     return data
 
 
-# Calculate Linear Returns
 def lin_returns(data):
     return 1+data.pct_change()
-
-# Calculate Log Returns
 
 
 def log_returns(data):
@@ -34,13 +28,9 @@ def get_asset_hist_perf(ticker):
     init_price = price[-1]
     return mean, vol, init_price
 
-# Get Drift of the Asset
-
 
 def drift_calc(vol, mean):
     return (mean-(0.5*vol**2))
-
-# Calculate Daily Returns
 
 
 def daily_returns(vol, mean, days, iterations):
@@ -48,8 +38,6 @@ def daily_returns(vol, mean, days, iterations):
     daily_returns = np.exp(
         drift + vol * np.random.normal(0, 1, (days, iterations)))
     return daily_returns
-
-# Monte Carlo
 
 
 def simulate_mc(init_price, vol, mean, days, iterations, name):
@@ -71,9 +59,9 @@ def simulate_mc(init_price, vol, mean, days, iterations, name):
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Current Value", f"${np.round(init_price, 2)}")
     col2.metric("Hisorical Yearly Return",
-                f"{np.round((mean*253)*100, 2)}%")
+                f"{np.round((mean*252)*100, 2)}%")
     col3.metric("Historical Yearly Volatility",
-                f"{np.round(vol*np.sqrt(253)*100, 2)}%")
+                f"{np.round(vol*np.sqrt(252)*100, 2)}%")
     col4.metric("Historical Sharpe Ratio",
                 f"{np.round(portfolio_functions.get_sharpe_ratio_single([mean, vol]), 3)}")
 
@@ -92,6 +80,46 @@ def get_percentile_prices(price_dataframe):
     return prices
 
 
+def get_chart(data):
+    hover = alt.selection_single(
+        fields=["Time (Months)"],
+        nearest=True,
+        on="mouseover",
+        empty="none",
+    )
+
+    lines = (
+        alt.Chart(data, title="Asset Price Estimates")
+        .mark_line()
+        .encode(
+            alt.X("Time (Months):Q", scale=alt.Scale(
+                zero=False, nice=False)),
+            alt.Y("Price:Q", scale=alt.Scale(zero=False)),
+            color='Estimate',
+            strokeDash='Estimate'
+        )
+    )
+
+    points = lines.transform_filter(hover).mark_circle(size=65)
+
+    tooltips = (
+        alt.Chart(data)
+        .mark_rule()
+        .encode(
+            x="Time (Months)",
+            y="Price",
+            opacity=alt.condition(hover, alt.value(0.3), alt.value(0)),
+            tooltip=[
+                alt.Tooltip("Time (Months)", title="Time (Months)"),
+                alt.Tooltip("Price", title="Price"),
+                alt.Tooltip('Estimate', title="Estimate")
+            ],
+        )
+        .add_selection(hover)
+    )
+    return (lines + points + tooltips).interactive()
+
+
 def plot_percentiles(init_price, percentile_prices, days):
     daily_interests = (percentile_prices/init_price)**(1/days)
     prices = np.ones((3, days+1))
@@ -108,15 +136,21 @@ def plot_percentiles(init_price, percentile_prices, days):
     col3.metric('Good Scenario', f'${np.round(percentile_prices[2], 2)}',
                 f'{np.round((percentile_prices[2]-init_price)/init_price * 100, 2)}%')
     col4.metric("Yearly Return",
-                f"{np.round(((percentile_prices[1]/init_price)**(253/days)-1)*100, 2)}%")
+                f"{np.round(((percentile_prices[1]/init_price)**(252/days)-1)*100, 2)}%")
 
-    df = pd.DataFrame(
-        {"Bad": prices[0], "Median": prices[1], "Good": prices[2]}, index=np.arange(days+1)/21)
+    df_bad = pd.DataFrame(
+        {"Price": prices[0], "Estimate": "Bad", "Time (Months)": np.arange(days+1)/21})
 
-    fig = df.plot(labels=dict(
-        index="Time [Months]", value="Price [$]", variable="Scenario"))
-    fig.update_yaxes(tickprefix="$")
-    st.plotly_chart(fig, use_container_width=True)
+    df_median = pd.DataFrame(
+        {"Price": prices[1], "Estimate": "Median", "Time (Months)": np.arange(days+1)/21})
+
+    df_good = pd.DataFrame(
+        {"Price": prices[2], "Estimate": "Good", "Time (Months)": np.arange(days+1)/21})
+
+    plotting_df = pd.concat([df_bad, df_median, df_good])
+
+    fig = get_chart(plotting_df)
+    st.altair_chart(fig, use_container_width=True)
 
 
 if __name__ == "__main__":

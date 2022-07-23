@@ -49,11 +49,8 @@ def tolerant_median(arrs):
 
 
 def get_stock_pb_pe(ticker):
-    url_ratios = (
-        f"https://financialmodelingprep.com/api/v3/ratios-ttm/{ticker}?apikey={api_key}")
     url_hist = (
         f"https://financialmodelingprep.com/api/v3/ratios/{ticker}?limit=10&apikey={api_key}")
-    ticker_data = get_jsonparsed_data(url_ratios)
     ratios_data_hist = get_jsonparsed_data(url_hist)
     ticker_yf_info = yf.Ticker(ticker).info
     pe = ticker_yf_info["forwardPE"]
@@ -162,8 +159,46 @@ def get_pe_pb_value(ticker):
             value_list.append(
                 (sector_ratios[i]/stock_ratios[i]) * current_price)
     value = np.array(value_list)
-    print(value)
     return np.median(value), df_stock, df_sector, dates
+
+
+def get_chart(data):
+    hover = alt.selection_single(
+        fields=["Date"],
+        nearest=True,
+        on="mouseover",
+        empty="none",
+    )
+
+    lines = (
+        alt.Chart(data, title="Historical Expected vs. Real Stock Price")
+        .mark_line()
+        .encode(
+            x="Date",
+            y="Price",
+            color='Method',
+            strokeDash='Method'
+        )
+    )
+
+    points = lines.transform_filter(hover).mark_circle(size=65)
+
+    tooltips = (
+        alt.Chart(data)
+        .mark_rule()
+        .encode(
+            x="Date",
+            y="Price",
+            opacity=alt.condition(hover, alt.value(0.3), alt.value(0)),
+            tooltip=[
+                alt.Tooltip("Date", title="Year"),
+                alt.Tooltip("Price", title="Price"),
+                alt.Tooltip('Method', title="Method")
+            ],
+        )
+        .add_selection(hover)
+    )
+    return (lines + points + tooltips).interactive()
 
 
 def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
@@ -183,7 +218,7 @@ def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
                                                "real_price"] * financial_df.at[i, "mod_diff"]
 
     historical_price = pd.DataFrame(
-        {'Date': dates, 'Price': financial_df['real_price'], 'Value': 'Historical Price'})
+        {'Date': dates, 'Price': financial_df['real_price'], 'Method': 'Historical Price'})
     dcf_diff = np.array([(dcf_hist[i]/historical_price['Price'].values[i])
                         for i in range(len(financial_df["mod_diff"]))])
     av_dcf_diff = np.median(dcf_diff)
@@ -204,18 +239,15 @@ def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
 
     plotting_df = pd.DataFrame(
         {"Date": dates, 'Price': financial_df['expected_value']})
-    plotting_df["Value"] = "Expected Value"
+    plotting_df['Method'] = "Expected Value"
 
     plotting_df = pd.concat([plotting_df, historical_price])
-    plotting_df["Date"] = pd.to_datetime(plotting_df["Date"])
+    plotting_df["Date"] = pd.to_datetime(
+        plotting_df["Date"], format="%Y-%m-%d")
+    plotting_df["Date"] = pd.DatetimeIndex(
+        plotting_df["Date"]).year.astype(str)
 
-    chart = alt.Chart(plotting_df, title="Historical Expected vs. Real Stock Price").mark_line().encode(
-        alt.X('Date', scale=alt.Scale(zero=False)),
-        alt.Y('Price', scale=alt.Scale(zero=False)),
-        color='Value',
-        strokeDash='Value',
-        tooltip=[alt.Tooltip('Value'), alt.Tooltip("Price")]
-    )
+    chart = get_chart(plotting_df)
     st.altair_chart(chart, use_container_width=True)
 
     return financial_df["financial_diff"].median(), av_dcf_diff, financial_df

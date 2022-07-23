@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import compound_interest.functions as functions
-import plotly.express as px
+import altair as alt
 
 st.set_page_config(
     page_title="Financial SuperApp",
@@ -31,7 +31,7 @@ with st.form("compound_form"):
         "Enter the final interest rate [%]", min_value=0.01)
 
     length = col2.number_input(
-        "Enter the legnth you want to compound for in years", 0, step=1, value=1)
+        "Enter the length you want to compound for in years", 0, step=1, value=1)
     years = length
 
     if sel_choice == "Bi-daily":
@@ -78,5 +78,5 @@ if form_btn:
         "Final Capital", f"${np.round(funds[-1], 2)}", f'{np.round((funds[-1]-funds[0])/funds[0] * 100, 2)}%')
     col4_fin.metric("Effecive Annual Rate",
                     f"{np.round(rewards/inital_capital /years * 100, 2)}%")
-    plot = px.line(y=funds)
-    st.plotly_chart(plot)
+    plot = functions.get_chart(funds)
+    st.altair_chart(plot, use_container_width=True)

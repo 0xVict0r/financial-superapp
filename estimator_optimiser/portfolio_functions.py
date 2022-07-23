@@ -37,7 +37,7 @@ def get_portfolio_hist_perf(data, weights):
 
 
 def get_sharpe_ratio_single(mean_vol):
-    return (mean_vol[0]*253)/(mean_vol[1]*np.sqrt(253))
+    return (mean_vol[0]*252)/(mean_vol[1]*np.sqrt(252))
 
 
 def get_performance_ratio(weights):
@@ -55,7 +55,7 @@ def get_performance_ratio(weights):
     rf = base_functions.import_stock_data('^TNX').iloc[-1]/100
 
     # Get Sortino Ratio
-    sortino = ((1+mean)**253-1-rf)/(vol_filtered*np.sqrt(253))
+    sortino = ((1+mean)**252-1-rf)/(vol_filtered*np.sqrt(252))
     return sortino*-1
 
 

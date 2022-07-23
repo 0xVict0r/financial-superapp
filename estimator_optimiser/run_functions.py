@@ -10,11 +10,11 @@ def best_portfolio_performance_estimator(tickers, price_init, years, mc_plotting
     mean, vol = portfolio_functions.get_portfolio_hist_perf(
         data, best_weights)
     price_est = base_functions.simulate_mc(
-        price_init, vol, mean, years*253, monte_carlo_trials, 'Portfolio')
+        price_init, vol, mean, years*252, monte_carlo_trials, 'Portfolio')
     portfolio_functions.print_portfolio_weights(tickers, best_weights)
     percentile_prices = base_functions.get_percentile_prices(price_est)
     base_functions.plot_percentiles(
-        price_init, percentile_prices, years*253)
+        price_init, percentile_prices, years*252)
     end = time.time()
     print("\n" + str(end - start) + "s")
     if mc_plotting:
@@ -28,11 +28,11 @@ def portfolio_performance_estimator(tickers, weights, init_value, years, mc_plot
     mean, vol = portfolio_functions.get_portfolio_hist_perf(
         portfolio_data, weights)
     price_est = base_functions.simulate_mc(
-        init_value, vol, mean, years*253, monte_carlo_trials, 'Portfolio')
+        init_value, vol, mean, years*252, monte_carlo_trials, 'Portfolio')
     portfolio_functions.print_portfolio_weights(tickers, weights)
     percentile_prices = base_functions.get_percentile_prices(price_est)
     base_functions.plot_percentiles(
-        init_value, percentile_prices, years*253)
+        init_value, percentile_prices, years*252)
     end = time.time()
     print("\n" + str(end - start) + "s")
     if mc_plotting:
@@ -43,9 +43,9 @@ def asset_price_estimator(ticker, years, mc_plotting=False, monte_carlo_trials=1
     start = time.time()
     mean, vol, init_price = base_functions.get_asset_hist_perf(ticker)
     price_est = base_functions.simulate_mc(
-        init_price, vol, mean, years*253, monte_carlo_trials, ticker)
+        init_price, vol, mean, years*252, monte_carlo_trials, ticker)
     base_functions.plot_percentiles(
-        init_price, base_functions.get_percentile_prices(price_est), years*253)
+        init_price, base_functions.get_percentile_prices(price_est), years*252)
     end = time.time()
     print("\n" + str(end - start) + "s")
     if mc_plotting:
