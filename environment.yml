@@ -1,3 +1,4 @@
+name : financial-superapp
 channles:
   - defaults
   - conda-forge
