@@ -5,9 +5,8 @@ import numpy as np
 import pandas as pd
 import finnhub
 import streamlit as st
-import os
 
-api_key = os.environ.get("finnhub_api")
+api_key = st.secrets["finnhub_api"]
 finnhub_client = finnhub.Client(api_key=api_key)
 
 print(finnhub_client.stock_social_sentiment('AAPL'))
@@ -70,6 +69,7 @@ def get_historical_social_sentiment(ticker_data):
             run = False
     social_sentiment_arr = np.array(total_social_sentiment_list)
     return social_sentiment_arr
+
 
 if __name__ == "__main__":
     print(get_current_social_sentiment(

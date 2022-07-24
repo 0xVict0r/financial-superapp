@@ -1,4 +1,3 @@
-from tracemalloc import start
 import fmpsdk as fm
 from urllib.request import urlopen
 import certifi
@@ -9,13 +8,16 @@ import pandas as pd
 import yfinance as yf
 import datetime
 import altair as alt
-import os
+import ssl
+import pycountry
+import investpy
 
-api_key = os.environ.get("fmp_api")
+api_key = st.secrets["fmp_api"]
+context = ssl.create_default_context(cafile=certifi.where())
 
 
 def get_jsonparsed_data(url):
-    response = urlopen(url, cafile=certifi.where())
+    response = urlopen(url, context=context)
     data = response.read().decode("utf-8")
     return json.loads(data)
 
@@ -24,19 +26,6 @@ def get_peers(ticker):
     url_peers = (
         f"https://financialmodelingprep.com/api/v4/stock_peers?symbol={ticker}&apikey={api_key}")
     peers = get_jsonparsed_data(url_peers)[0]["peersList"]
-    # ticker_info = fm.company_profile(apikey=api_key, symbol=ticker)[0]
-    # mc = ticker_info["mktCap"]
-    # industry = ticker_info["industry"]
-    # sector = ticker_info["sector"]
-    # try:
-    #     peers_info = fm.stock_screener(apikey=api_key, industry=industry, sector=sector,
-    #                                    market_cap_lower_than=int(np.floor(100*mc)), market_cap_more_than=int(np.floor(0.01*mc)), limit=10000)
-    # except:
-    #     peers_info = fm.stock_screener(apikey=api_key, sector=sector,
-    #                                    market_cap_lower_than=int(np.floor(100*mc)), market_cap_more_than=int(np.floor(0.01*mc)), limit=10000)
-    # peers = []
-    # for i in range(len(peers_info)):
-    #     peers.append(peers_info[i]['symbol'])
     return peers
 
 
@@ -52,98 +41,113 @@ def tolerant_median(arrs):
 def get_stock_pb_pe(ticker):
     url_hist = (
         f"https://financialmodelingprep.com/api/v3/ratios/{ticker}?limit=10&apikey={api_key}")
+    url_growth = (
+        f"https://financialmodelingprep.com/api/v3/cash-flow-statement-growth/{ticker}?limit=10&apikey={api_key}")
+    url_profit = (
+        f"https://financialmodelingprep.com/api/v3/income-statement-growth/{ticker}?limit=10&apikey={api_key}")
     ratios_data_hist = get_jsonparsed_data(url_hist)
-    ticker_yf_info = yf.Ticker(ticker).info
-    pe = ticker_yf_info["forwardPE"]
-    pb = ticker_yf_info["priceToBook"]
-    peg = ticker_yf_info["pegRatio"]
-    try:
-        pfcf = ticker_yf_info["marketCap"]/ticker_yf_info["freeCashflow"]
-    except:
-        pfcf = None
-    ps = ticker_yf_info["priceToSalesTrailing12Months"]
+    growth_data = get_jsonparsed_data(url_growth)
+    profit_data = get_jsonparsed_data(url_profit)
     pe_array_hist = []
-    pb_array_hist = []
     peg_array_hist = []
     pfcf_array_hist = []
     ps_array_hist = []
     dates_hist = []
+    fcf_growth = []
+    income_growth = []
+    earnings_growth = []
     for j in range(len(ratios_data_hist)):
         pe_array_hist.append(ratios_data_hist[j]["priceEarningsRatio"])
-        pb_array_hist.append(ratios_data_hist[j]["priceToBookRatio"])
         peg_array_hist.append(
             ratios_data_hist[j]["priceEarningsToGrowthRatio"])
         pfcf_array_hist.append(
             ratios_data_hist[j]["priceToFreeCashFlowsRatio"])
         ps_array_hist.append(ratios_data_hist[j]["priceSalesRatio"])
         dates_hist.append(ratios_data_hist[j]["date"])
+        fcf_growth.append(growth_data[j]["growthFreeCashFlow"])
+        income_growth.append(growth_data[j]["growthNetIncome"])
+        earnings_growth.append(profit_data[j]["growthGrossProfit"])
     pe_hist = np.array(pe_array_hist)
-    pb_hist = np.array(pb_array_hist)
     peg_hist = np.array(peg_array_hist)
     pfcf_hist = np.array(pfcf_array_hist)
     ps_hist = np.array(ps_array_hist)
     dates = np.array(dates_hist)
-    df_hist = pd.DataFrame({'pe': pe_hist, 'pb': pb_hist,
+    df_hist = pd.DataFrame({'pe': pe_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
-    return np.array([pe, pb, peg, pfcf, ps]), df_hist, dates
+    final_income_growth = np.mean(np.array(income_growth))
+    final_fcf_growth = np.mean(np.array(fcf_growth))
+    final_earnings_growth = np.mean(np.array(earnings_growth))
+    pe = pe_hist[0]/(1+final_earnings_growth)
+    peg = peg_hist[0]
+    ps = ps_hist[0]/(1+final_income_growth)
+    pfcf = pfcf_hist[0]/(1+final_fcf_growth)
+    return np.array([pe, peg, pfcf, ps]), df_hist, dates
 
 
 def get_sector_industry_pe_pb(ticker):
     peers = get_peers(ticker)
     pe_array = []
-    pb_array = []
     peg_array = []
     pfcf_array = []
     ps_array = []
     pe_array_hist = []
-    pb_array_hist = []
     peg_array_hist = []
     pfcf_array_hist = []
     ps_array_hist = []
     for i in range(len(peers)):
         pe_array_temp = []
-        pb_array_temp = []
         peg_array_temp = []
         pfcf_array_temp = []
         ps_array_temp = []
+        fcf_growth = []
+        income_growth = []
+        earnings_growth = []
         ticker_sim = peers[i]
-        url = (
-            f"https://financialmodelingprep.com/api/v3/ratios-ttm/{ticker_sim}?apikey={api_key}")
-        ratios_data = get_jsonparsed_data(url)
-        pb_array.append(ratios_data[0]["priceToBookRatioTTM"])
-        pe_array.append(ratios_data[0]["priceEarningsRatioTTM"])
-        peg_array.append(ratios_data[0]["priceEarningsToGrowthRatioTTM"])
-        pfcf_array.append(ratios_data[0]["priceToFreeCashFlowsRatioTTM"])
-        ps_array.append(ratios_data[0]["priceSalesRatioTTM"])
+        url_growth = (
+            f"https://financialmodelingprep.com/api/v3/cash-flow-statement-growth/{ticker_sim}?limit=10&apikey={api_key}")
+        url_profit = (
+            f"https://financialmodelingprep.com/api/v3/income-statement-growth/{ticker_sim}?limit=10&apikey={api_key}")
+        growth_data = get_jsonparsed_data(url_growth)
+        profit_data = get_jsonparsed_data(url_profit)
         url_hist = (
             f"https://financialmodelingprep.com/api/v3/ratios/{ticker_sim}?limit=10&apikey={api_key}")
         ratios_data_hist = get_jsonparsed_data(url_hist)
         for j in range(len(ratios_data_hist)):
             pe_array_temp.append(ratios_data_hist[j]["priceEarningsRatio"])
-            pb_array_temp.append(ratios_data_hist[j]["priceToBookRatio"])
             peg_array_temp.append(
                 ratios_data_hist[j]["priceEarningsToGrowthRatio"])
             pfcf_array_temp.append(
                 ratios_data_hist[j]["priceToFreeCashFlowsRatio"])
             ps_array_temp.append(ratios_data_hist[j]["priceSalesRatio"])
+            fcf_growth.append(growth_data[j]["growthFreeCashFlow"])
+            income_growth.append(growth_data[j]["growthNetIncome"])
+            earnings_growth.append(profit_data[j]["growthGrossProfit"])
         pe_array_hist.append(pe_array_temp)
-        pb_array_hist.append(pb_array_temp)
         peg_array_hist.append(peg_array_temp)
         pfcf_array_hist.append(pfcf_array_temp)
         ps_array_hist.append(ps_array_temp)
+        final_fcf_growth = np.mean(np.array(fcf_growth))
+        final_income_growth = np.mean(np.array(income_growth))
+        final_earnings_growth = np.mean(np.array(earnings_growth))
+        pe_array.append(pe_array_temp[0]/(1+final_earnings_growth))
+        peg_array.append(peg_array_temp[0])
+        pfcf_array.append(pfcf_array_temp[0]/(1+final_fcf_growth))
+        ps_array.append(ps_array_temp[0]/(1+final_income_growth))
     pe_hist = tolerant_median(np.array(pe_array_hist))
-    pb_hist = tolerant_median(np.array(pb_array_hist))
     peg_hist = tolerant_median(np.array(peg_array_hist))
     pfcf_hist = tolerant_median(np.array(pfcf_array_hist))
     ps_hist = tolerant_median(np.array(ps_array_hist))
-    df_hist = pd.DataFrame({'pe': pe_hist, 'pb': pb_hist,
+    df_hist = pd.DataFrame({'pe': pe_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
-    pe = np.median(np.array([i for i in pe_array if type(i) == type(0.0)]))
-    pb = np.median(np.array([i for i in pb_array if type(i) == type(0.0)]))
-    peg = np.median(np.array([i for i in peg_array if type(i) == type(0.0)]))
-    pfcf = np.median(np.array([i for i in pfcf_array if type(i) == type(0.0)]))
-    ps = np.median(np.array([i for i in ps_array if type(i) == type(0.0)]))
-    return np.array([pe, pb, peg, pfcf, ps]), df_hist
+    pe = np.median(np.array([i for i in pe_array if (
+        type(i) == type(0.0)) or (type(i) == type(np.array([0.0])[0]))]))
+    peg = np.median(np.array([i for i in peg_array if (
+        type(i) == type(0.0)) or (type(i) == type(np.array([0.0])[0]))]))
+    pfcf = np.median(np.array([i for i in pfcf_array if (
+        type(i) == type(0.0)) or (type(i) == type(np.array([0.0])[0]))]))
+    ps = np.median(np.array([i for i in ps_array if (
+        type(i) == type(0.0)) or (type(i) == type(np.array([0.0])[0]))]))
+    return np.array([pe, peg, pfcf, ps]), df_hist
 
 
 def get_historical_dcf(ticker):
@@ -263,6 +267,44 @@ def get_error(financial_df):
     return np.mean(error_array)
 
 
+def get_ddm(ticker):
+    ticker_data = yf.Ticker(ticker).info
+    dividend_rate = ticker_data['dividendRate']
+    url_div = (
+        f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?limit=40&apikey={api_key}")
+    metrics_data = get_jsonparsed_data(url_div)[0]
+    payout_ratio = metrics_data["payoutRatio"]
+    roe = metrics_data["roe"]
+    growth_rate = roe * (1 - payout_ratio)
+    print(growth_rate)
+
+    url_market = (
+        f"https://financialmodelingprep.com/api/v4/market_risk_premium?apikey={api_key}")
+    market_data = get_jsonparsed_data(url_market)
+
+    url_profile = (
+        f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={api_key}")
+    profile = get_jsonparsed_data(url_profile)[0]
+    beta = profile["beta"]
+
+    country_code = profile["country"]
+    country_long = pycountry.countries.get(alpha_2=country_code).name
+    market_risk_premium = [country['totalEquityRiskPremium']
+                           for country in market_data if country['country'] == country_long][0]/100
+    country_bonds = investpy.get_bonds_dict(country_long)
+    conutry_rf_name = [bond['name']
+                       for bond in country_bonds if bond['full_name'] == (country_long + " 10-Year")][0]
+    risk_free_rate = investpy.get_bond_recent_data(conutry_rf_name)[
+        "Close"].iloc[-1]/100
+
+    cost_of_equity = risk_free_rate + beta * market_risk_premium
+    print(cost_of_equity)
+
+    ddm = (dividend_rate * (1 + growth_rate))/(cost_of_equity - growth_rate)
+    return ddm
+
+
 if __name__ == "__main__":
-    ticker = "ETL.PA"
-    get_pe_pb_value(ticker)
+    ticker = "AAPL"
+    print(get_sector_industry_pe_pb(ticker)[0])
+    print(get_stock_pb_pe(ticker)[0])

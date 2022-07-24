@@ -8,3 +8,6 @@ scipy
 plotly
 fmpsdk
 altair
+quandl
+pycountry
+investpy
