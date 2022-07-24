@@ -74,9 +74,9 @@ def get_stock_pb_pe(ticker):
     dates = np.array(dates_hist)
     df_hist = pd.DataFrame({'pe': pe_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
-    final_income_growth = np.mean(np.array(income_growth))
-    final_fcf_growth = np.mean(np.array(fcf_growth))
-    final_earnings_growth = np.mean(np.array(earnings_growth))
+    final_income_growth = np.median(np.array(income_growth))
+    final_fcf_growth = np.median(np.array(fcf_growth))
+    final_earnings_growth = np.median(np.array(earnings_growth))
     pe = pe_hist[0]/(1+final_earnings_growth)
     peg = peg_hist[0]
     ps = ps_hist[0]/(1+final_income_growth)
@@ -126,13 +126,25 @@ def get_sector_industry_pe_pb(ticker):
         peg_array_hist.append(peg_array_temp)
         pfcf_array_hist.append(pfcf_array_temp)
         ps_array_hist.append(ps_array_temp)
-        final_fcf_growth = np.mean(np.array(fcf_growth))
-        final_income_growth = np.mean(np.array(income_growth))
-        final_earnings_growth = np.mean(np.array(earnings_growth))
-        pe_array.append(pe_array_temp[0]/(1+final_earnings_growth))
-        peg_array.append(peg_array_temp[0])
-        pfcf_array.append(pfcf_array_temp[0]/(1+final_fcf_growth))
-        ps_array.append(ps_array_temp[0]/(1+final_income_growth))
+        final_fcf_growth = np.median(np.array(fcf_growth))
+        final_income_growth = np.median(np.array(income_growth))
+        final_earnings_growth = np.median(np.array(earnings_growth))
+        try:
+            pe_array.append(pe_array_temp[0]/(1+final_earnings_growth))
+        except:
+            pe_array.append(None)
+        try:
+            peg_array.append(peg_array_temp[0])
+        except:
+            peg_array.append(None)
+        try:
+            pfcf_array.append(pfcf_array_temp[0]/(1+final_fcf_growth))
+        except:
+            pfcf_array.append(None)
+        try:
+            ps_array.append(ps_array_temp[0]/(1+final_income_growth))
+        except:
+            ps_array.append(None)
     pe_hist = tolerant_median(np.array(pe_array_hist))
     peg_hist = tolerant_median(np.array(peg_array_hist))
     pfcf_hist = tolerant_median(np.array(pfcf_array_hist))
@@ -263,7 +275,7 @@ def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
 
 def get_error(financial_df):
     error_array = (np.abs(
-        financial_df['real_price'] - financial_df['expected_value'])/financial_df['real_price'])*100
+        financial_df['real_price'] - financial_df['expected_value'])/financial_df['expected_value'])*100
     return np.mean(error_array)
 
 
