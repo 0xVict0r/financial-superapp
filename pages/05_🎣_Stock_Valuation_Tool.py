@@ -41,6 +41,9 @@ if run_btn_single:
     col1.metric("Current Stock Price", f"${np.round(current_price, 2)}")
     col2.metric("Current Valuation", f"${np.round(valuation, 2)}",
                 f"{np.round((valuation-current_price)/current_price * 100, 2)}%")
-    col3.metric("Current Analyst Target", f"${np.round(analyst_price, 2)}",
-                f"{np.round((analyst_price-current_price)/current_price * 100, 2)}%")
+    try:
+        col3.metric("Current Analyst Target", f"${np.round(analyst_price, 2)}",
+                    f"{np.round((analyst_price-current_price)/current_price * 100, 2)}%")
+    except TypeError:
+        col3.metric("Current Analyst Target", "N/A")
     col4.metric("Historical Error", f"{np.round(error, 2)}%")

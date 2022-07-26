@@ -288,7 +288,6 @@ def get_ddm(ticker):
     payout_ratio = metrics_data["payoutRatio"]
     roe = metrics_data["roe"]
     growth_rate = roe * (1 - payout_ratio)
-    print(growth_rate)
 
     url_market = (
         f"https://financialmodelingprep.com/api/v4/market_risk_premium?apikey={api_key}")
@@ -310,7 +309,6 @@ def get_ddm(ticker):
         "Close"].iloc[-1]/100
 
     cost_of_equity = risk_free_rate + beta * market_risk_premium
-    print(cost_of_equity)
 
     ddm = (dividend_rate * (1 + growth_rate))/(cost_of_equity - growth_rate)
     return ddm
