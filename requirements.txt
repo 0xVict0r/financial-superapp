@@ -11,3 +11,6 @@ altair
 quandl
 pycountry
 investpy
+fastapi
+uvicorn
+pydantic

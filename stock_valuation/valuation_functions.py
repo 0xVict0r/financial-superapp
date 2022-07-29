@@ -16,6 +16,17 @@ api_key = st.secrets["fmp_api"]
 context = ssl.create_default_context(cafile=certifi.where())
 
 
+def ratio_with_growth(ratio, growth_rate):
+    return ratio/(1+growth_rate)
+
+
+def safe_execute(default, exception, function, *args):
+    try:
+        return function(*args)
+    except exception:
+        return default
+
+
 def get_jsonparsed_data(url):
     response = urlopen(url, context=context)
     data = response.read().decode("utf-8")
@@ -23,10 +34,7 @@ def get_jsonparsed_data(url):
 
 
 def get_peers(ticker):
-    url_peers = (
-        f"https://financialmodelingprep.com/api/v4/stock_peers?symbol={ticker}&apikey={api_key}")
-    peers = get_jsonparsed_data(url_peers)[0]["peersList"]
-    return peers
+    return get_jsonparsed_data(f"https://financialmodelingprep.com/api/v4/stock_peers?symbol={ticker}&apikey={api_key}")[0]["peersList"]
 
 
 def tolerant_median(arrs):
@@ -39,15 +47,13 @@ def tolerant_median(arrs):
 
 
 def get_stock_pb_pe(ticker):
-    url_hist = (
+    ratios_data_hist = get_jsonparsed_data(
         f"https://financialmodelingprep.com/api/v3/ratios/{ticker}?limit=10&apikey={api_key}")
-    url_growth = (
+    growth_data = get_jsonparsed_data(
         f"https://financialmodelingprep.com/api/v3/cash-flow-statement-growth/{ticker}?limit=10&apikey={api_key}")
-    url_profit = (
+    profit_data = get_jsonparsed_data(
         f"https://financialmodelingprep.com/api/v3/income-statement-growth/{ticker}?limit=10&apikey={api_key}")
-    ratios_data_hist = get_jsonparsed_data(url_hist)
-    growth_data = get_jsonparsed_data(url_growth)
-    profit_data = get_jsonparsed_data(url_profit)
+
     pe_array_hist = []
     peg_array_hist = []
     pfcf_array_hist = []
@@ -56,6 +62,7 @@ def get_stock_pb_pe(ticker):
     fcf_growth = []
     income_growth = []
     earnings_growth = []
+
     for j in range(len(ratios_data_hist)):
         pe_array_hist.append(ratios_data_hist[j]["priceEarningsRatio"])
         peg_array_hist.append(
@@ -67,25 +74,34 @@ def get_stock_pb_pe(ticker):
         fcf_growth.append(growth_data[j]["growthFreeCashFlow"])
         income_growth.append(growth_data[j]["growthNetIncome"])
         earnings_growth.append(profit_data[j]["growthGrossProfit"])
+
     pe_hist = np.array(pe_array_hist)
     peg_hist = np.array(peg_array_hist)
     pfcf_hist = np.array(pfcf_array_hist)
     ps_hist = np.array(ps_array_hist)
     dates = np.array(dates_hist)
+
     df_hist = pd.DataFrame({'pe': pe_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
+
     final_income_growth = np.median(np.array(income_growth))
     final_fcf_growth = np.median(np.array(fcf_growth))
     final_earnings_growth = np.median(np.array(earnings_growth))
-    pe = pe_hist[0]/(1+final_earnings_growth)
+
+    pe = safe_execute(
+        None, TypeError, ratio_with_growth, pe_hist[0], final_earnings_growth)
     peg = peg_hist[0]
-    ps = ps_hist[0]/(1+final_income_growth)
-    pfcf = pfcf_hist[0]/(1+final_fcf_growth)
+    ps = safe_execute(
+        None, TypeError, ratio_with_growth, ps_hist[0], final_income_growth)
+    pfcf = safe_execute(
+        None, TypeError, ratio_with_growth, pfcf_hist[0], final_fcf_growth)
+
     return np.array([pe, peg, pfcf, ps]), df_hist, dates
 
 
 def get_sector_industry_pe_pb(ticker):
     peers = get_peers(ticker)
+
     pe_array = []
     peg_array = []
     pfcf_array = []
@@ -94,7 +110,9 @@ def get_sector_industry_pe_pb(ticker):
     peg_array_hist = []
     pfcf_array_hist = []
     ps_array_hist = []
+
     for i in range(len(peers)):
+
         pe_array_temp = []
         peg_array_temp = []
         pfcf_array_temp = []
@@ -103,15 +121,14 @@ def get_sector_industry_pe_pb(ticker):
         income_growth = []
         earnings_growth = []
         ticker_sim = peers[i]
-        url_growth = (
+
+        growth_data = get_jsonparsed_data(
             f"https://financialmodelingprep.com/api/v3/cash-flow-statement-growth/{ticker_sim}?limit=10&apikey={api_key}")
-        url_profit = (
+        profit_data = get_jsonparsed_data(
             f"https://financialmodelingprep.com/api/v3/income-statement-growth/{ticker_sim}?limit=10&apikey={api_key}")
-        growth_data = get_jsonparsed_data(url_growth)
-        profit_data = get_jsonparsed_data(url_profit)
-        url_hist = (
+        ratios_data_hist = get_jsonparsed_data(
             f"https://financialmodelingprep.com/api/v3/ratios/{ticker_sim}?limit=10&apikey={api_key}")
-        ratios_data_hist = get_jsonparsed_data(url_hist)
+
         for j in range(len(ratios_data_hist)):
             pe_array_temp.append(ratios_data_hist[j]["priceEarningsRatio"])
             peg_array_temp.append(
@@ -122,6 +139,7 @@ def get_sector_industry_pe_pb(ticker):
             fcf_growth.append(growth_data[j]["growthFreeCashFlow"])
             income_growth.append(growth_data[j]["growthNetIncome"])
             earnings_growth.append(profit_data[j]["growthGrossProfit"])
+
         pe_array_hist.append(pe_array_temp)
         peg_array_hist.append(peg_array_temp)
         pfcf_array_hist.append(pfcf_array_temp)
@@ -129,28 +147,23 @@ def get_sector_industry_pe_pb(ticker):
         final_fcf_growth = np.median(np.array(fcf_growth))
         final_income_growth = np.median(np.array(income_growth))
         final_earnings_growth = np.median(np.array(earnings_growth))
-        try:
-            pe_array.append(pe_array_temp[0]/(1+final_earnings_growth))
-        except:
-            pe_array.append(None)
-        try:
-            peg_array.append(peg_array_temp[0])
-        except:
-            peg_array.append(None)
-        try:
-            pfcf_array.append(pfcf_array_temp[0]/(1+final_fcf_growth))
-        except:
-            pfcf_array.append(None)
-        try:
-            ps_array.append(ps_array_temp[0]/(1+final_income_growth))
-        except:
-            ps_array.append(None)
+
+        pe_array.append(safe_execute(
+            None, TypeError, ratio_with_growth, pe_array_temp[0], final_earnings_growth))
+        peg_array.append(peg_array_temp[0])
+        pfcf_array.append(safe_execute(
+            None, TypeError, ratio_with_growth, pfcf_array_temp[0], final_fcf_growth))
+        ps_array.append(safe_execute(
+            None, TypeError, ratio_with_growth, ps_array_temp[0], final_income_growth))
+
     pe_hist = tolerant_median(np.array(pe_array_hist))
     peg_hist = tolerant_median(np.array(peg_array_hist))
     pfcf_hist = tolerant_median(np.array(pfcf_array_hist))
     ps_hist = tolerant_median(np.array(ps_array_hist))
+
     df_hist = pd.DataFrame({'pe': pe_hist,
                            'peg': peg_hist, 'pfcf': pfcf_hist, 'ps': ps_hist})
+
     pe = np.median(np.array([i for i in pe_array if (
         type(i) == type(0.0)) or (type(i) == type(np.array([0.0])[0]))]))
     peg = np.median(np.array([i for i in peg_array if (
@@ -163,9 +176,8 @@ def get_sector_industry_pe_pb(ticker):
 
 
 def get_historical_dcf(ticker):
-    url = (
+    dcf_hist_data = get_jsonparsed_data(
         f"https://financialmodelingprep.com/api/v3/historical-discounted-cash-flow-statement/{ticker}?apikey={api_key}")
-    dcf_hist_data = get_jsonparsed_data(url)
     return np.array([dcf_data['dcf'] for dcf_data in dcf_hist_data])[:10]
 
 
@@ -221,7 +233,7 @@ def get_chart(data):
     return (lines + points + tooltips).interactive()
 
 
-def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
+def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates, plotting):
     dcf_diff = []
     series_diff = (df_stock/df_sector).median(axis=1)
     financial_df = pd.DataFrame({'date': dates, 'financial_diff': series_diff})
@@ -257,18 +269,19 @@ def plot_hist(ticker, df_sector, df_stock, dcf_hist, dates):
         if financial_df.at[i, "expected_value"] < 0:
             financial_df.at[i, "expected_value"] = 0
 
-    plotting_df = pd.DataFrame(
-        {"Date": dates, 'Price': financial_df['expected_value']})
-    plotting_df['Method'] = "Expected Value"
+    if plotting:
+        plotting_df = pd.DataFrame(
+            {"Date": dates, 'Price': financial_df['expected_value']})
+        plotting_df['Method'] = "Expected Value"
 
-    plotting_df = pd.concat([plotting_df, historical_price])
-    plotting_df["Date"] = pd.to_datetime(
-        plotting_df["Date"], format="%Y-%m-%d")
-    plotting_df["Date"] = pd.DatetimeIndex(
-        plotting_df["Date"]).year.astype(str)
+        plotting_df = pd.concat([plotting_df, historical_price])
+        plotting_df["Date"] = pd.to_datetime(
+            plotting_df["Date"], format="%Y-%m-%d")
+        plotting_df["Date"] = pd.DatetimeIndex(
+            plotting_df["Date"]).year.astype(str)
 
-    chart = get_chart(plotting_df)
-    st.altair_chart(chart, use_container_width=True)
+        chart = get_chart(plotting_df)
+        st.altair_chart(chart, use_container_width=True)
 
     return financial_df["financial_diff"].median(), av_dcf_diff, financial_df
 
@@ -282,20 +295,17 @@ def get_error(financial_df):
 def get_ddm(ticker):
     ticker_data = yf.Ticker(ticker).info
     dividend_rate = ticker_data['dividendRate']
-    url_div = (
-        f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?limit=40&apikey={api_key}")
-    metrics_data = get_jsonparsed_data(url_div)[0]
+    metrics_data = get_jsonparsed_data(
+        f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?limit=40&apikey={api_key}")[0]
     payout_ratio = metrics_data["payoutRatio"]
     roe = metrics_data["roe"]
     growth_rate = roe * (1 - payout_ratio)
 
-    url_market = (
+    market_data = get_jsonparsed_data(
         f"https://financialmodelingprep.com/api/v4/market_risk_premium?apikey={api_key}")
-    market_data = get_jsonparsed_data(url_market)
 
-    url_profile = (
-        f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={api_key}")
-    profile = get_jsonparsed_data(url_profile)[0]
+    profile = get_jsonparsed_data(
+        f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={api_key}")[0]
     beta = profile["beta"]
 
     country_code = profile["country"]
@@ -312,6 +322,19 @@ def get_ddm(ticker):
 
     ddm = (dividend_rate * (1 + growth_rate))/(cost_of_equity - growth_rate)
     return ddm
+
+
+def get_valuation(ticker, plotting):
+    financial_price, df_stock, df_sector, dates = get_pe_pb_value(ticker)
+    dcf_hist = get_historical_dcf(ticker)
+    dcf_price = fm.discounted_cash_flow(api_key, ticker)[0]["dcf"]
+    financial_price, df_stock, df_sector, dates = get_pe_pb_value(ticker)
+    mod_financial, ave_dcf_diff, financial_df = plot_hist(
+        ticker, df_sector, df_stock, dcf_hist, dates, plotting)
+    financial_price = financial_price/mod_financial
+    dcf_price = dcf_price/ave_dcf_diff
+    error = get_error(financial_df)
+    return np.mean([financial_price, dcf_price]), error
 
 
 if __name__ == "__main__":
