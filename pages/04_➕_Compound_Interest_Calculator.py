@@ -10,6 +10,8 @@ st.set_page_config(
 
 st.title("Compound Interest Calculator")
 
+st.write("A simple tool to visualise the power of compound interest. You can enter an initial capital, an interest rate, a compoundign rate and a investment length to determine how much money you'll end up with. The interest rate is also modifiable with time in case the investment has a decreasing/increasing interest rate.")
+
 st.markdown(
     """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
 

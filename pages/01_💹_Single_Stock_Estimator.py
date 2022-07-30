@@ -10,6 +10,8 @@ st.set_page_config(
 
 st.title("Single Asset Price Estimation")
 
+st.write("Given an asset's ticker (eg. AAPL for Apple Inc.), the tool will determine the most probable asset price at the end of the specified period. This is done using historical stock data (10 years) and a Monte Carlo estimation method.")
+
 st.markdown(
     """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
 

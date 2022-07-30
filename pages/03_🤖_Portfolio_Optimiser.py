@@ -12,6 +12,8 @@ st.set_page_config(
 
 st.title("Portfolio Optimiser")
 
+st.write("Given a ticker list, the tool will find the best possible combinantion according to the Sortino Optimisation theory. It will then compute the estimated price at the end of the speicified period given an initial investment (using a Monte Carlo method).")
+
 st.markdown(
     """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
 

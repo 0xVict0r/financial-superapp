@@ -11,6 +11,8 @@ st.set_page_config(
 
 st.title("Portfolio Value Estimation")
 
+st.write("Given a multitude of tickers and their value inside one's portfolio, the tool will estimate the most probable value of that portfolio at the end of the specified time. This uses the same method as the single stock estimator tool. The estimation is performed using the same methods as the single asset estimator (Monte Carlo and historical data).")
+
 st.markdown(
     """<style> div.stButton > button:first-child { width: 100% ; } </style>""", unsafe_allow_html=True)
 

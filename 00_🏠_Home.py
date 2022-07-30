@@ -15,11 +15,11 @@ st.markdown(
     _This financial superapp contains tools both to help an investor with the building of his portfolio and for simpler and more elementary applications. The tools provided by this app are shortly described below._
 
     ### _Single Asset Estimator_
-    Given an asset's ticker (eg. AAPL for Apple Inc.), the tool will determine the most probable asset price at the end of the specified period.
+    Given an asset's ticker (eg. AAPL for Apple Inc.), the tool will determine the most probable asset price at the end of the specified period. This is done using historical stock data (10 years) and a Monte Carlo estimation method.
     ### _Portfolio Estimator_
-    Given a multitude of tickers and their value inside one's portfolio, the tool will estimate the most probable value of that portfolio at the end of the specified time. This uses the same method as the single stock estimator tool.
+    Given a multitude of tickers and their value inside one's portfolio, the tool will estimate the most probable value of that portfolio at the end of the specified time. This uses the same method as the single stock estimator tool. The estimation is performed using the same methods as the single asset estimator (Monte Carlo and historical data).
     ### _Portfolio Optimiser_ 
-    Given a ticker list, the tool will find the best possible combinantion according to the Sharpe Optimisation theory. It will then compute the estimated price at the end of the speicified period given an initial investment.
+    Given a ticker list, the tool will find the best possible combinantion according to the Sortino Optimisation theory. It will then compute the estimated price at the end of the speicified period given an initial investment (using a Monte Carlo method).
     ### _Compound Interest Calculator_
     A simple tool to visualise the power of compound interest. You can enter an initial capital, an interest rate, a compoundign rate and a investment length to determine how much money you'll end up with. The interest rate is also modifiable with time in case the investment has a decreasing/increasing interest rate.
     ### _Stock Valuation Tool_
