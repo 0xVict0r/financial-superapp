@@ -8,14 +8,6 @@ st.set_page_config(
     page_icon="📈",
 )
 
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
 st.title("Single Asset Price Estimation")
 
 st.write("Given an asset's ticker (eg. AAPL for Apple Inc.), the tool will determine the most probable asset price at the end of the specified period. This is done using historical stock data (10 years) and a Monte Carlo estimation method.")

@@ -10,14 +10,6 @@ st.set_page_config(
     page_icon="📈",
 )
 
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
 st.title("Stock Valuation Tool")
 
 st.write("Given a stock symbol (no ETF, no FX, no Crypto), the tool will determine the fair value of the asset. It is calculated using a combination of financial ratios and DCF models as well as both relative and absolute methods. The median analyst price target is also given to have a comparison with institutionals. A graph showing the history of the valuation model and a figure of its error are also shown to assess the model's accuracy for the chosen stock.")
