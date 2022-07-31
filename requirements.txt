@@ -14,3 +14,5 @@ investpy
 fastapi
 uvicorn
 pydantic
+ntlk
+scipy

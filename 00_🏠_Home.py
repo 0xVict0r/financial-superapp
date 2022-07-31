@@ -5,7 +5,7 @@ yf.pdr_override()
 
 st.set_page_config(
     page_title="Financial SuperApp",
-    page_icon="📈",
+    page_icon="📈"
 )
 
 st.markdown(
@@ -24,5 +24,7 @@ st.markdown(
     A simple tool to visualise the power of compound interest. You can enter an initial capital, an interest rate, a compoundign rate and a investment length to determine how much money you'll end up with. The interest rate is also modifiable with time in case the investment has a decreasing/increasing interest rate.
     ### _Stock Valuation Tool_
     Given a stock symbol (no ETF, no FX, no Crypto), the tool will determine the fair value of the asset. It is calculated using a combination of financial ratios and DCF models as well as both relative and absolute methods. The median analyst price target is also given to have a comparison with institutionals. A graph showing the history of the valuation model and a figure of its error are also shown to assess the model's accuracy for the chosen stock.
+    ### _Stock Sentiment Tool_
+    This tool gets the market's sentiment of a given stock ticker in the US market (as it is the most popular and the only one yielding viable results). It uses data from Twitter, StockTwits and Wall Street news to generate a sentiment score between 0% and 100% (using natural language processing). A 4 day history is also given in order to understand the trend of the metric.
     """
 )
