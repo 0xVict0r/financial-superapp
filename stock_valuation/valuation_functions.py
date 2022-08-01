@@ -1,6 +1,4 @@
 import fmpsdk as fm
-from urllib.request import urlopen
-import certifi
 import json
 import numpy as np
 import streamlit as st
@@ -8,12 +6,11 @@ import pandas as pd
 import yfinance as yf
 import datetime
 import altair as alt
-import ssl
+import httpx
 import pycountry
 import investpy
 
 api_key = st.secrets["fmp_api"]
-context = ssl.create_default_context(cafile=certifi.where())
 
 
 def ratio_with_growth(ratio, growth_rate):
@@ -28,9 +25,8 @@ def safe_execute(default, exception, function, *args):
 
 
 def get_jsonparsed_data(url):
-    response = urlopen(url, context=context)
-    data = response.read().decode("utf-8")
-    return json.loads(data)
+    response = httpx.get(url)
+    return response.json()
 
 
 def get_peers(ticker):

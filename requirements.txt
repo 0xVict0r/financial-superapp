@@ -13,3 +13,4 @@ pycountry
 investpy
 nltk
 scipy
+httpx

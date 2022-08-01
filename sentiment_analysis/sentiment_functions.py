@@ -1,10 +1,7 @@
-from urllib.request import urlopen
-import certifi
-import json
 import numpy as np
 import pandas as pd
 import streamlit as st
-import ssl
+import httpx
 import re
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
@@ -12,13 +9,11 @@ from datetime import datetime, timedelta
 
 
 api_key = st.secrets["fmp_api"]
-context = ssl.create_default_context(cafile=certifi.where())
 
 
 def get_jsonparsed_data(url):
-    response = urlopen(url, context=context)
-    data = response.read().decode("utf-8")
-    return json.loads(data)
+    response = httpx.get(url)
+    return response.json()
 
 
 def clean(raw):

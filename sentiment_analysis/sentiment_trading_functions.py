@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import social_sentiment_functions as functions
+import sentiment_functions as functions
 from scipy.ndimage import gaussian_filter1d
 import matplotlib.pyplot as plt
 
