@@ -16,4 +16,3 @@ uvicorn
 pydantic
 nltk
 scipy
-prophet
